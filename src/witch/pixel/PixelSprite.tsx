@@ -16,7 +16,7 @@ export function PixelSprite({
   pixelSize = 4,
   colorOverrides,
   silhouette = false,
-  silhouetteColor = '#0d0714',
+  silhouetteColor = '#0a0502',
   label,
   className,
 }: PixelSpriteProps) {

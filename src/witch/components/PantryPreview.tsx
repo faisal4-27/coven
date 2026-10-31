@@ -65,13 +65,13 @@ export function PantryPreview({ to = '/hob' }: PantryPreviewProps) {
       <Link to={to} className="group block h-full outline-none">
         <Card
           accent="hob"
-          className="flex h-full items-center gap-4 bg-[#2b1d42] transition-transform group-hover:-translate-y-1 group-focus-visible:-translate-y-1"
+          className="flex h-full items-center gap-4 bg-[#28160c] transition-transform group-hover:-translate-y-1 group-focus-visible:-translate-y-1"
         >
           <SharedPixelSprite sprite={hob} scale={2} title="Hob · Potion Overflow" />
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="font-display text-lg text-[#ffc94d]">
+              <p className="font-display text-lg text-[#ff7a1a]">
                 Hob · Potion Overflow
               </p>
               <span className="witch-tag witch-tag--violet text-sm">
@@ -80,15 +80,15 @@ export function PantryPreview({ to = '/hob' }: PantryPreviewProps) {
             </div>
 
             {loading ? (
-              <p className="mt-1 text-lg text-[#c2b3d9]">
+              <p className="mt-1 text-lg text-[#d6b69c]">
                 Checking cauldron for a 20-min gap...
               </p>
             ) : bestMeal ? (
               <>
-                <p className="mt-1 truncate text-xl text-[#f1e8d8]">
+                <p className="mt-1 truncate text-xl text-[#f4ecd8]">
                   20m pick: <strong>{bestMeal.name}</strong>
                 </p>
-                <p className="text-base text-[#c2b3d9]">
+                <p className="text-base text-[#d6b69c]">
                   {bestMeal.minutes} min prep ·{' '}
                   {bestMeal.missing.length === 0
                     ? 'All ingredients owned ($0 extra)'
@@ -96,7 +96,7 @@ export function PantryPreview({ to = '/hob' }: PantryPreviewProps) {
                 </p>
               </>
             ) : (
-              <p className="mt-1 text-lg text-[#c2b3d9]">
+              <p className="mt-1 text-lg text-[#d6b69c]">
                 No 20-min recipe matches current dietary wards — open kitchen to adjust.
               </p>
             )}

@@ -40,10 +40,10 @@ export function GapPicker({ value, onChange }: GapPickerProps) {
       aria-labelledby="witch-gap-heading"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 id="witch-gap-heading" className="witch-head text-xs text-[#ffc94d]">
+        <h3 id="witch-gap-heading" className="witch-head text-xs text-[#ff7a1a]">
           Time Gap Window
         </h3>
-        <span className="text-lg text-[#c2b3d9]">Selected: {value} min</span>
+        <span className="text-lg text-[#d6b69c]">Selected: {value} min</span>
       </div>
 
       <div
@@ -68,19 +68,19 @@ export function GapPicker({ value, onChange }: GapPickerProps) {
       </div>
 
       {detectedCalendarGapMin !== null ? (
-        <p className="text-base text-[#6fe08a]">
+        <p className="text-base text-[#ff9f43]">
           Shared calendar gap detected: ~{detectedCalendarGapMin} min between events.
         </p>
       ) : (
-        <p className="text-base text-[#c2b3d9]">
+        <p className="text-base text-[#d6b69c]">
           Demo windows active until your Coven timetable events are loaded.
         </p>
       )}
 
-      <p className="text-base text-[#c2b3d9]">
+      <p className="text-base text-[#d6b69c]">
         Campus gaps assume no stove access — look for{' '}
-        <strong className="text-[#f1e8d8]">Packable</strong> or{' '}
-        <strong className="text-[#f1e8d8]">Make-ahead</strong> potions before leaving home.
+        <strong className="text-[#f4ecd8]">Packable</strong> or{' '}
+        <strong className="text-[#f4ecd8]">Make-ahead</strong> potions before leaving home.
       </p>
     </section>
   );

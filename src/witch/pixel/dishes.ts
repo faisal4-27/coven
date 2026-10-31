@@ -82,9 +82,9 @@ export function getDishColorOverrides(
   const prioritized =
     nonBaseColors.length > 0
       ? [...nonBaseColors, ...baseColors]
-      : [...baseColors, '#ffc94d', '#6fe08a', '#9a7bff'];
+      : [...baseColors, '#ff7a1a', '#ffb347', '#ff9f43'];
 
-  const colorA = prioritized[0] ?? '#ffc94d';
+  const colorA = prioritized[0] ?? '#ff7a1a';
   const colorB = prioritized[1] ?? colorA;
   const colorC = prioritized[2] ?? prioritized[1] ?? colorA;
 

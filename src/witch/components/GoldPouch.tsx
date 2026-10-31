@@ -52,15 +52,15 @@ export function GoldPouch({ gold, mixCost, onGoldChange }: GoldPouchProps) {
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <PixelSprite grid={POUCH_PIXEL_SPRITE} pixelSize={3} label="Gold pouch" />
-          <h3 id="witch-gold-heading" className="witch-head text-xs text-[#ffc94d]">
+          <h3 id="witch-gold-heading" className="witch-head text-xs text-[#ff7a1a]">
             Gold Pouch (CAD)
           </h3>
         </div>
-        <span className="text-base text-[#c2b3d9]">Owned items = $0.00</span>
+        <span className="text-base text-[#d6b69c]">Owned items = $0.00</span>
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="witch-gold-input" className="text-lg text-[#f1e8d8]">
+        <label htmlFor="witch-gold-input" className="text-lg text-[#f4ecd8]">
           Available grocery budget ($)
         </label>
         <input
@@ -87,9 +87,9 @@ export function GoldPouch({ gold, mixCost, onGoldChange }: GoldPouchProps) {
       >
         <span>
           Extra mix cost:{' '}
-          <strong className="text-[#ffc94d]">${mixCost.toFixed(2)}</strong>
+          <strong className="text-[#ffb347]">${mixCost.toFixed(2)}</strong>
         </span>
-        <span className={overBudget ? 'text-[#ff7a6b] font-bold' : 'text-[#6fe08a]'}>
+        <span className={overBudget ? 'text-[#ff5a36] font-bold' : 'text-[#ff9f43]'}>
           {overBudget
             ? `Short by $${Math.abs(remaining).toFixed(2)}`
             : `Remaining: $${remaining.toFixed(2)}`}
@@ -97,12 +97,12 @@ export function GoldPouch({ gold, mixCost, onGoldChange }: GoldPouchProps) {
       </div>
 
       {overBudget && (
-        <p role="alert" className="text-base text-[#ff7a6b]">
+        <p role="alert" className="text-base text-[#ff5a36]">
           Unowned ingredients exceed your Gold Pouch. Mark items you already own or adjust your mix before stirring.
         </p>
       )}
 
-      <p id="witch-gold-note" className="text-base text-[#c2b3d9]">
+      <p id="witch-gold-note" className="text-base text-[#d6b69c]">
         All prices shown are approximate illustrative estimates, not verified retailer prices.
       </p>
     </section>

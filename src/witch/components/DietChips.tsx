@@ -19,11 +19,11 @@ export function DietChips({ avoided, onToggle }: DietChipsProps) {
       aria-labelledby="witch-diet-heading"
     >
       <div className="flex items-center justify-between gap-2">
-        <h3 id="witch-diet-heading" className="witch-head text-xs text-[#9a7bff]">
+        <h3 id="witch-diet-heading" className="witch-head text-xs text-[#ff7a1a]">
           Dietary Wards
         </h3>
         {avoided.length > 0 && (
-          <span className="text-base text-[#ff7a6b]">
+          <span className="text-base text-[#ff5a36]">
             {avoided.length} active
           </span>
         )}
@@ -51,7 +51,7 @@ export function DietChips({ avoided, onToggle }: DietChipsProps) {
         })}
       </div>
 
-      <p className="text-base text-[#c2b3d9]">
+      <p className="text-base text-[#d6b69c]">
         Reminder: simplified allergen tags are for planning convenience only and are not a food-safety guarantee. Always verify ingredient labels independently.
       </p>
     </section>

@@ -1,16 +1,18 @@
 .witch-root {
-  --w-bg: #1a1028;
-  --w-bg-deep: #11091b;
-  --w-panel: #2b1d42;
-  --w-panel-hi: #372554;
-  --w-text: #f1e8d8;
-  --w-muted: #c2b3d9;
-  --w-amber: #ffc94d;
-  --w-green: #6fe08a;
-  --w-red: #ff7a6b;
-  --w-violet: #9a7bff;
+  --w-bg: #170d08;
+  --w-bg-deep: #0f0804;
+  --w-panel: #28160c;
+  --w-panel-hi: #3d2111;
+  --w-edge: #6b3818;
+  --w-well-edge: #4a2610;
+  --w-text: #f4ecd8;
+  --w-muted: #d6b69c;
+  --w-amber: #ffb347;
+  --w-green: #ff7a1a;
+  --w-red: #ff5a36;
+  --w-violet: #ff9f43;
   --w-hob: #ff7a1a;
-  --w-border: #0d0714;
+  --w-border: #0a0502;
 
   --w-font-head: var(--font-display, 'Pixelify Sans', 'Courier New', monospace);
   --w-font-body: var(--font-pixel, 'VT323', 'Courier New', monospace);
@@ -27,11 +29,11 @@
   min-height: 100dvh;
   background-color: var(--w-bg);
   background-image:
-    radial-gradient(2px 2px at 26px 38px, rgba(241, 232, 216, 0.72) 50%, transparent 51%),
-    radial-gradient(2px 2px at 118px 94px, rgba(255, 201, 77, 0.65) 50%, transparent 51%),
-    radial-gradient(2px 2px at 212px 28px, rgba(154, 123, 255, 0.7) 50%, transparent 51%),
-    radial-gradient(3px 3px at 78px 186px, rgba(111, 224, 138, 0.5) 50%, transparent 51%),
-    radial-gradient(2px 2px at 284px 154px, rgba(241, 232, 216, 0.58) 50%, transparent 51%);
+    radial-gradient(2px 2px at 26px 38px, rgba(244, 236, 216, 0.72) 50%, transparent 51%),
+    radial-gradient(2px 2px at 118px 94px, rgba(255, 179, 71, 0.7) 50%, transparent 51%),
+    radial-gradient(2px 2px at 212px 28px, rgba(255, 122, 26, 0.78) 50%, transparent 51%),
+    radial-gradient(3px 3px at 78px 186px, rgba(255, 159, 67, 0.58) 50%, transparent 51%),
+    radial-gradient(2px 2px at 284px 154px, rgba(244, 236, 216, 0.58) 50%, transparent 51%);
   background-size: 320px 230px;
   position: relative;
 }
@@ -54,19 +56,19 @@
 
 .witch-root .witch-panel {
   background-color: var(--w-panel);
-  border: 4px solid var(--w-border);
+  border: 4px solid var(--w-edge);
   box-shadow:
-    inset -4px -4px 0 rgba(13, 7, 20, 0.55),
-    inset 4px 4px 0 rgba(255, 255, 255, 0.1),
+    inset -4px -4px 0 rgba(10, 5, 2, 0.55),
+    inset 4px 4px 0 rgba(255, 160, 80, 0.12),
     6px 6px 0 var(--w-border);
 }
 
 .witch-root .witch-well {
   background-color: var(--w-bg-deep);
-  border: 4px solid var(--w-border);
+  border: 4px solid var(--w-well-edge);
   box-shadow:
     inset 4px 4px 0 rgba(0, 0, 0, 0.6),
-    inset -2px -2px 0 rgba(255, 255, 255, 0.06);
+    inset -2px -2px 0 rgba(255, 160, 80, 0.08);
 }
 
 .witch-root .witch-btn {
@@ -354,7 +356,7 @@
   position: fixed;
   inset: 0;
   z-index: 60;
-  background-color: rgba(13, 7, 20, 0.84);
+  background-color: rgba(12, 6, 3, 0.86);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -252,7 +252,7 @@ function inferCustomColor(name: string): string {
   if (lower.includes('oil') || lower.includes('butter')) {
     return '#f6d04d';
   }
-  return '#9a7bff';
+  return '#ff7a1a';
 }
 
 function inferCustomAllergen(name: string): Allergen | null {

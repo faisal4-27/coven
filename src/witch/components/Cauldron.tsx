@@ -35,7 +35,7 @@ export function Cauldron({
       aria-labelledby="witch-cauldron-heading"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="witch-cauldron-heading" className="witch-head text-sm text-[#6fe08a]">
+        <h2 id="witch-cauldron-heading" className="witch-head text-sm text-[#ff7a1a]">
           Brewing Cauldron
         </h2>
         <span className="witch-tag witch-tag--violet">
@@ -57,7 +57,7 @@ export function Cauldron({
         )}
 
         {mix.length === 0 ? (
-          <div className="py-3 text-center text-lg text-[#c2b3d9]">
+          <div className="py-3 text-center text-lg text-[#d6b69c]">
             Cauldron is empty — upload a photo above or tap ingredients on the shelf!
           </div>
         ) : (
@@ -118,7 +118,7 @@ export function Cauldron({
         </div>
 
         {mix.length > 0 && (
-          <p className="text-base text-[#c2b3d9]">
+          <p className="text-base text-[#d6b69c]">
             Tip: tap any floating ingredient icon above the rim to remove it.
           </p>
         )}
@@ -126,12 +126,12 @@ export function Cauldron({
 
       <div className="witch-well flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-lg">
         <span>
-          In pot: <strong className="text-[#f1e8d8]">{mix.length}</strong>
+          In pot: <strong className="text-[#f4ecd8]">{mix.length}</strong>
         </span>
         <span>
-          Cost: <strong className="text-[#ffc94d]">${mixCost.toFixed(2)}</strong>
+          Cost: <strong className="text-[#ffb347]">${mixCost.toFixed(2)}</strong>
         </span>
-        <span className={overBudget ? 'text-[#ff7a6b] font-bold' : 'text-[#6fe08a]'}>
+        <span className={overBudget ? 'text-[#ff5a36] font-bold' : 'text-[#ff9f43]'}>
           {overBudget
             ? `Over by $${Math.abs(remaining).toFixed(2)}`
             : `$${remaining.toFixed(2)} left`}

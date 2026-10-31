@@ -132,11 +132,11 @@ export function ResultModal({
                   </span>
                   <h2
                     id="witch-result-modal-title"
-                    className="witch-head mt-2 text-base text-[#ffc94d]"
+                    className="witch-head mt-2 text-base text-[#ff7a1a]"
                   >
                     {recipe.potionName}
                   </h2>
-                  <p className="text-2xl text-[#f1e8d8]">{recipe.mealName}</p>
+                  <p className="text-2xl text-[#f4ecd8]">{recipe.mealName}</p>
                 </div>
 
                 <button
@@ -193,12 +193,12 @@ export function ResultModal({
                 </span>
               </div>
 
-              <p className="text-lg text-[#c2b3d9]">
+              <p className="text-lg text-[#d6b69c]">
                 {renderCampusGuidance(recipe)}
               </p>
 
               <div>
-                <h3 className="witch-head mb-2 text-xs text-[#6fe08a]">
+                <h3 className="witch-head mb-2 text-xs text-[#ff7a1a]">
                   Required Ingredients
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -212,7 +212,7 @@ export function ResultModal({
                           pixelSize={3}
                         />
                         <span>{meta.name}</span>
-                        <span className="text-sm text-[#c2b3d9]">
+                        <span className="text-sm text-[#d6b69c]">
                           {isOwned ? '(owned)' : `(~$${meta.priceCad.toFixed(2)})`}
                         </span>
                       </span>
@@ -223,10 +223,10 @@ export function ResultModal({
 
               {unownedInRecipe.length > 0 && (
                 <div className="witch-well px-3 py-2 text-base">
-                  <p className="text-[#ffc94d]">
+                  <p className="text-[#ffb347]">
                     Not yet in your owned pantry: {unownedInRecipe.join(', ')}
                   </p>
-                  <p className="text-[#c2b3d9]">
+                  <p className="text-[#d6b69c]">
                     {campusSpot
                       ? `Potential campus pickup: ${campusSpot}`
                       : 'No campus dining match found for these items — check a nearby grocer.'}
@@ -235,10 +235,10 @@ export function ResultModal({
               )}
 
               <div>
-                <h3 className="witch-head mb-2 text-xs text-[#ffc94d]">
+                <h3 className="witch-head mb-2 text-xs text-[#ffb347]">
                   Brewing Steps
                 </h3>
-                <ol className="flex list-decimal flex-col gap-1.5 pl-6 text-xl text-[#f1e8d8]">
+                <ol className="flex list-decimal flex-col gap-1.5 pl-6 text-xl text-[#f4ecd8]">
                   {recipe.steps.map((step, index) => (
                     <li key={index}>{step}</li>
                   ))}
@@ -247,7 +247,7 @@ export function ResultModal({
 
               {alternatives.length > 0 && (
                 <div className="witch-well flex flex-col gap-2 p-3">
-                  <p className="text-base text-[#9a7bff]">
+                  <p className="text-base text-[#ffb347]">
                     Other potions your current mix can also brew:
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -268,7 +268,7 @@ export function ResultModal({
               )}
 
               {unused.length > 0 && (
-                <p className="text-base text-[#c2b3d9]">
+                <p className="text-base text-[#d6b69c]">
                   Unused ingredients left floating in pot:{' '}
                   {unused.map((id) => getIngredientMeta(id).name).join(', ')}.
                 </p>
@@ -307,11 +307,11 @@ export function ResultModal({
                   <span className="witch-tag witch-tag--amber">So close!</span>
                   <h2
                     id="witch-result-modal-title"
-                    className="witch-head mt-2 text-base text-[#ffc94d]"
+                    className="witch-head mt-2 text-base text-[#ff7a1a]"
                   >
                     Almost {recipe.potionName}
                   </h2>
-                  <p className="text-xl text-[#c2b3d9]">
+                  <p className="text-xl text-[#d6b69c]">
                     ({recipe.mealName} · {recipe.minutes} min)
                   </p>
                 </div>
@@ -330,21 +330,21 @@ export function ResultModal({
                 <PixelSprite
                   grid={visual.grid}
                   silhouette
-                  silhouetteColor="#0d0714"
+                  silhouetteColor="#0a0502"
                   pixelSize={11}
                   label="Silhouette of an undiscovered dish"
                 />
-                <span className="text-base text-[#c2b3d9]">
+                <span className="text-base text-[#d6b69c]">
                   Add the missing {missing.length === 1 ? 'ingredient' : 'ingredients'} below to reveal this dish!
                 </span>
               </div>
 
               <div>
-                <p className="mb-2 text-lg text-[#6fe08a]">
+                <p className="mb-2 text-lg text-[#ff9f43]">
                   Matched in cauldron:{' '}
                   {matched.map((id) => getIngredientMeta(id).name).join(', ')}
                 </p>
-                <h3 className="witch-head mb-2 text-xs text-[#ff7a6b]">
+                <h3 className="witch-head mb-2 text-xs text-[#ff5a36]">
                   Add to Complete Potion
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -357,7 +357,7 @@ export function ResultModal({
                           pixelSize={3}
                         />
                         <span>{meta.name}</span>
-                        <span className="text-sm text-[#c2b3d9]">
+                        <span className="text-sm text-[#d6b69c]">
                           (~${meta.priceCad.toFixed(2)})
                         </span>
                       </span>
@@ -367,7 +367,7 @@ export function ResultModal({
               </div>
 
               {campusSpot && (
-                <div className="witch-well px-3 py-2 text-base text-[#c2b3d9]">
+                <div className="witch-well px-3 py-2 text-base text-[#d6b69c]">
                   Potential campus pickup: {campusSpot}
                 </div>
               )}
@@ -388,7 +388,7 @@ export function ResultModal({
                 <span className="witch-tag witch-tag--red">Brew Failed</span>
                 <h2
                   id="witch-result-modal-title"
-                  className="witch-head mt-2 text-base text-[#ff7a6b]"
+                  className="witch-head mt-2 text-base text-[#ff5a36]"
                 >
                   {result.title}
                 </h2>
@@ -409,13 +409,13 @@ export function ResultModal({
                 <PixelSprite
                   grid={SLOP_DISH_SPRITE}
                   pixelSize={12}
-                  label="Bubbling purple slop"
+                  label="Bubbling cauldron slop"
                 />
               </div>
             </div>
 
-            <p className="text-xl text-[#f1e8d8]">{result.message}</p>
-            <div className="witch-well px-3 py-2 text-lg text-[#ffc94d]">
+            <p className="text-xl text-[#f4ecd8]">{result.message}</p>
+            <div className="witch-well px-3 py-2 text-lg text-[#ffb347]">
               Hint: {result.suggestion}
             </div>
 

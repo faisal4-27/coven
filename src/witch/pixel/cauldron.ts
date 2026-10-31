@@ -16,7 +16,7 @@ export const CAULDRON_SPRITE: PixelGrid = [
 function parseHexToRgb(hex: string): [number, number, number] {
   const clean = hex.replace('#', '');
   if (clean.length !== 6) {
-    return [111, 224, 138];
+    return [255, 122, 26];
   }
   const r = parseInt(clean.slice(0, 2), 16);
   const g = parseInt(clean.slice(2, 4), 16);
@@ -37,7 +37,7 @@ export function computeCauldronLiquidColor(
   isBrewing = false
 ): string {
   if (mix.length === 0) {
-    return '#6fe08a';
+    return '#ff7a1a';
   }
 
   let sumR = 0;
@@ -55,7 +55,7 @@ export function computeCauldronLiquidColor(
   }
 
   if (count === 0) {
-    return '#6fe08a';
+    return '#ff7a1a';
   }
 
   let avgR = sumR / count;
@@ -63,9 +63,9 @@ export function computeCauldronLiquidColor(
   let avgB = sumB / count;
 
   if (isBrewing) {
-    avgR = avgR * 0.7 + 154 * 0.3;
-    avgG = avgG * 0.7 + 123 * 0.3;
-    avgB = avgB * 0.7 + 255 * 0.3;
+    avgR = avgR * 0.65 + 255 * 0.35;
+    avgG = avgG * 0.65 + 122 * 0.35;
+    avgB = avgB * 0.65 + 26 * 0.35;
   }
 
   return rgbToHex(avgR, avgG, avgB);

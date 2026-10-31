@@ -42,10 +42,10 @@ export function PantryShelf({
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 id="witch-shelf-heading" className="witch-head text-sm text-[#ffc94d]">
+          <h2 id="witch-shelf-heading" className="witch-head text-sm text-[#ff7a1a]">
             Magical Pantry Shelf
           </h2>
-          <p className="text-base text-[#c2b3d9]">
+          <p className="text-base text-[#d6b69c]">
             {owned.length} of {catalog.length} items currently owned ($0 to brew)
           </p>
         </div>
@@ -84,7 +84,7 @@ export function PantryShelf({
       </div>
 
       {owned.length === 0 && (
-        <div className="witch-well px-3 py-2 text-base text-[#ffc94d]">
+        <div className="witch-well px-3 py-2 text-base text-[#ffb347]">
           Your pantry is currently empty! Upload a photo in the Scanner above or switch to &ldquo;Tap: Mark as Owned&rdquo; to mark scraps on your shelf.
         </div>
       )}
@@ -129,15 +129,15 @@ export function PantryShelf({
             >
               <div className="flex w-full items-center justify-between text-xs">
                 {isOwned ? (
-                  <span className="inline-flex items-center gap-1 text-[#6fe08a]">
+                  <span className="inline-flex items-center gap-1 text-[#ff7a1a]">
                     <PixelSprite grid={CHECK_BADGE_SPRITE} pixelSize={2} />
                     <span>OWNED</span>
                   </span>
                 ) : (
-                  <span className="text-[#c2b3d9]">~${item.priceCad.toFixed(2)}</span>
+                  <span className="text-[#d6b69c]">~${item.priceCad.toFixed(2)}</span>
                 )}
                 {isInMix && (
-                  <span className="text-[#9a7bff] font-bold">IN POT</span>
+                  <span className="text-[#ffb347] font-bold">IN POT</span>
                 )}
               </div>
 
@@ -148,11 +148,11 @@ export function PantryShelf({
                 />
               </div>
 
-              <span className="text-lg leading-tight text-[#f1e8d8]">
+              <span className="text-lg leading-tight text-[#f4ecd8]">
                 {item.name}
               </span>
 
-              <span className="text-sm leading-none text-[#c2b3d9]">
+              <span className="text-sm leading-none text-[#d6b69c]">
                 {isRestricted
                   ? `Blocked (${item.allergen})`
                   : item.isCustomScanned

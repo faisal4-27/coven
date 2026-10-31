@@ -30,10 +30,10 @@ export function Codex({
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 id="witch-codex-heading" className="witch-head text-base text-[#ffc94d]">
+          <h2 id="witch-codex-heading" className="witch-head text-base text-[#ff7a1a]">
             Magical Potion Codex
           </h2>
-          <p className="text-lg text-[#c2b3d9]">
+          <p className="text-lg text-[#d6b69c]">
             Unlock recipes by scanning shelf photos or stirring matches in the Brewing Station.
           </p>
         </div>
@@ -50,7 +50,7 @@ export function Codex({
       </div>
 
       <div className="flex flex-col gap-1">
-        <div className="flex justify-between text-base text-[#c2b3d9]">
+        <div className="flex justify-between text-base text-[#d6b69c]">
           <span>Collection Progress</span>
           <span>{progressPct}%</span>
         </div>
@@ -70,7 +70,7 @@ export function Codex({
       </div>
 
       {foundCount === 0 && (
-        <div className="witch-well px-4 py-3 text-lg text-[#ffc94d]">
+        <div className="witch-well px-4 py-3 text-lg text-[#ffb347]">
           No potions unlocked yet! Upload a photo in the Scanner above or stir your starting pantry to claim your first entry.
         </div>
       )}
@@ -88,19 +88,19 @@ export function Codex({
                 className="witch-well flex flex-col items-center justify-between gap-2 p-4 text-center opacity-80"
                 aria-label={`Undiscovered potion #${recipe.number}, requires ${recipe.ingredients.length} ingredients`}
               >
-                <span className="text-sm text-[#c2b3d9]">
+                <span className="text-sm text-[#d6b69c]">
                   #{String(recipe.number).padStart(2, '0')}
                 </span>
                 <div className="my-2">
                   <PixelSprite
                     grid={visual.grid}
                     silhouette
-                    silhouetteColor="#0d0714"
+                    silhouetteColor="#0a0502"
                     pixelSize={7}
                   />
                 </div>
-                <p className="witch-head text-xs text-[#9a7bff]">???</p>
-                <p className="text-base text-[#c2b3d9]">
+                <p className="witch-head text-xs text-[#ff7a1a]">???</p>
+                <p className="text-base text-[#d6b69c]">
                   {recipe.ingredients.length} ingredients required
                 </p>
               </div>
@@ -115,13 +115,13 @@ export function Codex({
               className="witch-shelf-item witch-shelf-item--owned justify-between p-4"
             >
               <div className="flex w-full items-center justify-between text-sm">
-                <span className="text-[#c2b3d9]">
+                <span className="text-[#d6b69c]">
                   #{String(recipe.number).padStart(2, '0')}
                 </span>
                 {isCooked ? (
-                  <span className="text-[#ffc94d] font-bold">COOKED</span>
+                  <span className="text-[#ffb347] font-bold">COOKED</span>
                 ) : recipe.isCustomScanned ? (
-                  <span className="text-[#9a7bff] font-bold">SCANNED</span>
+                  <span className="text-[#ff9f43] font-bold">SCANNED</span>
                 ) : null}
               </div>
 
@@ -134,11 +134,11 @@ export function Codex({
               </div>
 
               <div>
-                <p className="witch-head text-[11px] text-[#6fe08a]">
+                <p className="witch-head text-[11px] text-[#ff7a1a]">
                   {recipe.potionName}
                 </p>
-                <p className="mt-1 text-lg text-[#f1e8d8]">{recipe.mealName}</p>
-                <p className="text-sm text-[#c2b3d9]">
+                <p className="mt-1 text-lg text-[#f4ecd8]">{recipe.mealName}</p>
+                <p className="text-sm text-[#d6b69c]">
                   {recipe.minutes} min ·{' '}
                   {recipe.packable ? 'Packable' : 'Home meal'}
                 </p>

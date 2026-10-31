@@ -31,10 +31,10 @@ export function ExamMode({
       aria-labelledby="witch-exam-heading"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 id="witch-exam-heading" className="witch-head text-xs text-[#6fe08a]">
+        <h3 id="witch-exam-heading" className="witch-head text-xs text-[#ff7a1a]">
           Exam Week Kitchen
         </h3>
-        <span className="text-base text-[#c2b3d9]">Low-friction options</span>
+        <span className="text-base text-[#d6b69c]">Low-friction options</span>
       </div>
 
       <div
@@ -60,14 +60,14 @@ export function ExamMode({
         </button>
       </div>
 
-      <p className="text-base text-[#c2b3d9]">
+      <p className="text-base text-[#d6b69c]">
         {kind === 'focus'
           ? 'Quick, portable options suited for short study breaks between chapters.'
           : 'Simple, comforting evening meals and overnight prep for winding down your routine.'}
       </p>
 
       {suggestions.length === 0 ? (
-        <div className="witch-well px-3 py-3 text-base text-[#c2b3d9]">
+        <div className="witch-well px-3 py-3 text-base text-[#d6b69c]">
           No exam options match all active dietary wards right now. Try relaxing a filter to view more recipes.
         </div>
       ) : (
@@ -92,10 +92,10 @@ export function ExamMode({
                     label={recipe.mealName}
                   />
                   <div className="min-w-0">
-                    <p className="truncate text-lg font-bold text-[#f1e8d8]">
+                    <p className="truncate text-lg font-bold text-[#f4ecd8]">
                       {recipe.potionName}
                     </p>
-                    <p className="text-base text-[#c2b3d9]">
+                    <p className="text-base text-[#d6b69c]">
                       {recipe.mealName} · {recipe.minutes}m ({effort} effort) ·{' '}
                       {haveCount}/{recipe.ingredients.length} owned
                     </p>

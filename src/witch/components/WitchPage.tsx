@@ -39,7 +39,7 @@ import { PantryScanner } from './PantryScanner';
 import { PantryShelf } from './PantryShelf';
 import { ResultModal } from './ResultModal';
 
-type ActiveTab = 'brew' | 'codex';
+type ActiveTab = 'scanner' | 'kitchen' | 'codex';
 
 interface BannerNotice {
   text: string;
@@ -61,7 +61,7 @@ export function WitchPage() {
     initial.customRecipes ?? []
   );
 
-  const [activeTab, setActiveTab] = useState<ActiveTab>('brew');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('scanner');
   const [shelfMode, setShelfMode] = useState<ShelfMode>('brew');
   const [gapMinutes, setGapMinutes] = useState<GapDurationMinutes>(20);
   const [mix, setMix] = useState<IngredientId[]>([]);
@@ -463,7 +463,7 @@ export function WitchPage() {
       return al === null || !avoided.includes(al);
     });
     setMix(allowedIds);
-    setActiveTab('brew');
+    setActiveTab('kitchen');
     showNotice(
       `Loaded ${recipe.potionName} ingredients into the cauldron — press STIR! to brew.`,
       'info'
@@ -471,7 +471,13 @@ export function WitchPage() {
   };
 
   return (
-    <div className="witch-root witch-page-shell">
+    <div
+      className="witch-root witch-page-shell"
+      style={{
+        ['--accent' as string]: '#ff7a1a',
+        ['--accent-dark' as string]: '#8f3a05',
+      }}
+    >
       <Starfield count={36} seed={11} />
 
       <div className="relative z-10 flex min-h-dvh flex-col">
@@ -498,11 +504,19 @@ export function WitchPage() {
             >
               <button
                 type="button"
-                aria-pressed={activeTab === 'brew'}
-                onClick={() => setActiveTab('brew')}
+                aria-pressed={activeTab === 'scanner'}
+                onClick={() => setActiveTab('scanner')}
                 className="witch-btn"
               >
-                Brewing Station
+                Photo Scanner
+              </button>
+              <button
+                type="button"
+                aria-pressed={activeTab === 'kitchen'}
+                onClick={() => setActiveTab('kitchen')}
+                className="witch-btn"
+              >
+                Pantry &amp; Kitchen ({owned.length})
               </button>
               <button
                 type="button"
@@ -531,10 +545,10 @@ export function WitchPage() {
               role={notice.tone === 'warn' ? 'alert' : 'status'}
               className={`witch-panel flex items-center justify-between gap-3 px-4 py-3 ${
                 notice.tone === 'warn'
-                  ? 'border-[#ff7a6b] text-[#ff7a6b]'
+                  ? 'border-[#ff5a36] text-[#ff8566]'
                   : notice.tone === 'ok'
-                    ? 'border-[#6fe08a] text-[#6fe08a]'
-                    : 'text-[#ffc94d]'
+                    ? 'border-[#ff7a1a] text-[#ff9f43]'
+                    : 'text-[#ffb347]'
               }`}
             >
               <p className="text-xl">{notice.text}</p>
@@ -549,164 +563,171 @@ export function WitchPage() {
             </div>
           )}
 
-          {activeTab === 'brew' ? (
-            <>
-              {/* TOP HERO SECTION — INSTANT UPLOAD / PHOTO SCANNER */}
-              <PantryScanner
-                catalog={catalog}
-                lastBrewedRecipe={lastScannedRecipe}
-                cookedIds={cooked}
-                isAutoBrewing={isStirring}
-                hasPantryItems={owned.length > 0 || customIngredients.length > 0}
-                onScanStart={handleScanStart}
-                onScanError={handleScanError}
-                onScanComplete={handleScanComplete}
-                onRebrewIds={handleRebrewIds}
-                onMarkCooked={handleMarkCooked}
-                onClearPantry={handleClearPantry}
-              />
+          {/* MAIN VIEW — INSTANT PHOTO-TO-POTION SCANNER (kept mounted to preserve photo state across tabs) */}
+          <div className={activeTab === 'scanner' ? 'block' : 'hidden'}>
+            <PantryScanner
+              catalog={catalog}
+              lastBrewedRecipe={lastScannedRecipe}
+              cookedIds={cooked}
+              isAutoBrewing={isStirring}
+              hasPantryItems={owned.length > 0 || customIngredients.length > 0}
+              rank={rank}
+              ownedCount={owned.length}
+              gapMinutes={gapMinutes}
+              gold={gold}
+              onScanStart={handleScanStart}
+              onScanError={handleScanError}
+              onScanComplete={handleScanComplete}
+              onRebrewIds={handleRebrewIds}
+              onMarkCooked={handleMarkCooked}
+              onClearPantry={handleClearPantry}
+              onOpenKitchen={() => setActiveTab('kitchen')}
+            />
+          </div>
 
-              <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
-                {/* LEFT SECTION — BREWING STATION */}
-                <div className="flex flex-col gap-4 lg:col-span-5">
-                  <Cauldron
-                    mix={mix}
-                    mixCost={mixCost}
-                    gold={gold}
-                    isStirring={isStirring || isPhotoScanning}
-                    flyingIngredient={flyingIngredient}
-                    onRemoveIngredient={handleRemoveFromCauldron}
-                    onStir={handleStir}
-                    onEmpty={() => setMix([])}
-                  />
+          {activeTab === 'kitchen' && (
+            <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
+              {/* LEFT SECTION — BREWING STATION */}
+              <div className="flex flex-col gap-4 lg:col-span-5">
+                <Cauldron
+                  mix={mix}
+                  mixCost={mixCost}
+                  gold={gold}
+                  isStirring={isStirring || isPhotoScanning}
+                  flyingIngredient={flyingIngredient}
+                  onRemoveIngredient={handleRemoveFromCauldron}
+                  onStir={handleStir}
+                  onEmpty={() => setMix([])}
+                />
 
-                  <GapPicker value={gapMinutes} onChange={setGapMinutes} />
+                <GapPicker value={gapMinutes} onChange={setGapMinutes} />
 
-                  <GoldPouch
-                    gold={gold}
-                    mixCost={mixCost}
-                    onGoldChange={setGold}
-                  />
+                <GoldPouch
+                  gold={gold}
+                  mixCost={mixCost}
+                  onGoldChange={setGold}
+                />
 
-                  <DietChips
-                    avoided={avoided}
-                    onToggle={handleToggleAllergen}
-                  />
+                <DietChips
+                  avoided={avoided}
+                  onToggle={handleToggleAllergen}
+                />
 
-                  {/* Gap-Filtered Meal Recommendations */}
-                  <section
-                    className="witch-panel flex flex-col gap-3 p-4"
-                    aria-labelledby="witch-recs-heading"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <h3
-                        id="witch-recs-heading"
-                        className="witch-head text-xs text-[#6fe08a]"
-                      >
-                        Best Meals for {gapMinutes}m Gap
-                      </h3>
-                      <span className="text-sm text-[#c2b3d9]">
-                        Top 3 ranked
-                      </span>
+                {/* Gap-Filtered Meal Recommendations */}
+                <section
+                  className="witch-panel flex flex-col gap-3 p-4"
+                  aria-labelledby="witch-recs-heading"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <h3
+                      id="witch-recs-heading"
+                      className="witch-head text-xs text-[#ff7a1a]"
+                    >
+                      Best Meals for {gapMinutes}m Gap
+                    </h3>
+                    <span className="text-sm text-[#d6b69c]">
+                      Top 3 ranked
+                    </span>
+                  </div>
+
+                  {recsLoading ? (
+                    <p className="text-lg text-[#d6b69c]">
+                      Ranking recipes for your {gapMinutes}-minute gap...
+                    </p>
+                  ) : gapRecommendations.length === 0 ? (
+                    <div className="witch-well px-3 py-2 text-base text-[#d6b69c]">
+                      No potions fit within {gapMinutes} minutes under your active dietary wards. Try choosing a longer time window.
                     </div>
+                  ) : (
+                    <ul className="flex flex-col gap-2">
+                      {gapRecommendations.map((sug) => {
+                        const matchedRecipe = allRecipes.find((r) =>
+                          sug.name.startsWith(r.potionName)
+                        );
+                        return (
+                          <li
+                            key={sug.name}
+                            className="witch-well flex flex-col gap-1.5 p-3"
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="text-lg font-bold text-[#f4ecd8]">
+                                {sug.name}
+                              </span>
+                              <span className="witch-tag witch-tag--amber text-sm">
+                                {sug.minutes}m · {sug.effort} effort
+                              </span>
+                            </div>
 
-                    {recsLoading ? (
-                      <p className="text-lg text-[#c2b3d9]">
-                        Ranking recipes for your {gapMinutes}-minute gap...
-                      </p>
-                    ) : gapRecommendations.length === 0 ? (
-                      <div className="witch-well px-3 py-2 text-base text-[#c2b3d9]">
-                        No potions fit within {gapMinutes} minutes under your active dietary wards. Try choosing a longer time window.
-                      </div>
-                    ) : (
-                      <ul className="flex flex-col gap-2">
-                        {gapRecommendations.map((sug) => {
-                          const matchedRecipe = allRecipes.find((r) =>
-                            sug.name.startsWith(r.potionName)
-                          );
-                          return (
-                            <li
-                              key={sug.name}
-                              className="witch-well flex flex-col gap-1.5 p-3"
-                            >
-                              <div className="flex flex-wrap items-center justify-between gap-2">
-                                <span className="text-lg font-bold text-[#f1e8d8]">
-                                  {sug.name}
-                                </span>
-                                <span className="witch-tag witch-tag--amber text-sm">
-                                  {sug.minutes}m · {sug.effort} effort
-                                </span>
-                              </div>
+                            <p className="text-base text-[#ff9f43]">
+                              Uses owned:{' '}
+                              {sug.uses.length > 0
+                                ? sug.uses.join(', ')
+                                : 'None yet'}
+                            </p>
 
-                              <p className="text-base text-[#6fe08a]">
-                                Uses owned:{' '}
-                                {sug.uses.length > 0
-                                  ? sug.uses.join(', ')
-                                  : 'None yet'}
-                              </p>
-
-                              {sug.missing.length > 0 ? (
-                                <>
-                                  <p className="text-base text-[#ffc94d]">
-                                    Missing: {sug.missing.join(', ')}
-                                  </p>
-                                  {sug.whereToGetMissing && (
-                                    <p className="text-sm text-[#c2b3d9]">
-                                      Campus hint: {sug.whereToGetMissing}
-                                    </p>
-                                  )}
-                                </>
-                              ) : (
-                                <p className="text-base text-[#6fe08a]">
-                                  Ready to brew right now for $0 extra!
+                            {sug.missing.length > 0 ? (
+                              <>
+                                <p className="text-base text-[#ffb347]">
+                                  Missing: {sug.missing.join(', ')}
                                 </p>
-                              )}
+                                {sug.whereToGetMissing && (
+                                  <p className="text-sm text-[#d6b69c]">
+                                    Campus hint: {sug.whereToGetMissing}
+                                  </p>
+                                )}
+                              </>
+                            ) : (
+                              <p className="text-base text-[#ff9f43]">
+                                Ready to brew right now for $0 extra!
+                              </p>
+                            )}
 
-                              {matchedRecipe && (
-                                <div className="pt-1">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleLoadRecipeIntoCauldron(
-                                        matchedRecipe
-                                      )
-                                    }
-                                    className="witch-btn px-2.5 py-1 text-[9px]"
-                                  >
-                                    Load into Cauldron
-                                  </button>
-                                </div>
-                              )}
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                  </section>
-                </div>
-
-                {/* RIGHT SECTION — MAGICAL PANTRY */}
-                <div className="flex flex-col gap-4 lg:col-span-7">
-                  <PantryShelf
-                    catalog={catalog}
-                    mode={shelfMode}
-                    owned={owned}
-                    mix={mix}
-                    avoided={avoided}
-                    onModeChange={setShelfMode}
-                    onSelectIngredient={handleSelectShelfIngredient}
-                    onClearPantry={handleClearPantry}
-                  />
-
-                  <ExamMode
-                    owned={owned}
-                    avoided={avoided}
-                    onLoadRecipeIntoCauldron={handleLoadRecipeIntoCauldron}
-                  />
-                </div>
+                            {matchedRecipe && (
+                              <div className="pt-1">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleLoadRecipeIntoCauldron(
+                                      matchedRecipe
+                                    )
+                                  }
+                                  className="witch-btn px-2.5 py-1 text-[9px]"
+                                >
+                                  Load into Cauldron
+                                </button>
+                              </div>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </section>
               </div>
-            </>
-          ) : (
+
+              {/* RIGHT SECTION — MAGICAL PANTRY */}
+              <div className="flex flex-col gap-4 lg:col-span-7">
+                <PantryShelf
+                  catalog={catalog}
+                  mode={shelfMode}
+                  owned={owned}
+                  mix={mix}
+                  avoided={avoided}
+                  onModeChange={setShelfMode}
+                  onSelectIngredient={handleSelectShelfIngredient}
+                  onClearPantry={handleClearPantry}
+                />
+
+                <ExamMode
+                  owned={owned}
+                  avoided={avoided}
+                  onLoadRecipeIntoCauldron={handleLoadRecipeIntoCauldron}
+                />
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'codex' && (
             <Codex
               discoveredIds={discovered}
               cookedIds={cooked}
