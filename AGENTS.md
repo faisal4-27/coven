@@ -36,14 +36,22 @@ Each person owns one full vertical slice, UI plus logic. Stay inside your own fo
 
 ## 3. Tech stack
 
-- Vite, React, TypeScript, Tailwind
-- React Router for the four feature routes
-- Zustand (or React context) for shared app state
-- Leaflet or MapLibre for maps, `@turf/turf` for geometry
-- `suncalc` for sun position and moon phase
+- Vite, React 19, TypeScript (strict), Tailwind v4 via `@tailwindcss/vite` (theme tokens live in `src/index.css`, no config file)
+- React Router 7 (`react-router-dom`) for the four feature routes
+- Zustand for shared app state (`src/shared/store.ts`)
+- Clerk (`@clerk/react` v6) for sign up and sign in, see section 3.1
+- Leaflet + `react-leaflet` for maps. Geometry (shadow hulls, point in polygon) is hand-rolled in `src/features/vampire/shadows.ts`, no turf
+- `suncalc` v2 for sun position and moon phase. **v2 is ESM with named imports and returns degrees, azimuth clockwise from north.** Old v1 examples (radians, south-based azimuth, default import) are wrong
 - `pdfjs-dist` for syllabus text extraction in the browser
 - LLM calls go through Vercel serverless functions in `api/` so keys never reach the browser
 - Deployed on Vercel
+
+### 3.1 Auth
+
+- Clerk, configured with `VITE_CLERK_PUBLISHABLE_KEY` in `.env.local` (and in Vercel env vars). Never commit it. `.env.example` lists it.
+- No key means **demo mode**. Sign up and sign in open a pixel dialog that just asks for a name and stores it in `localStorage`. The demo can never break on missing keys or venue Wi-Fi.
+- Everything goes through `src/shared/auth.tsx`: `AuthProvider`, `AuthButtons` (landing CTAs), `AccountButton` (header avatar or sign out), `RequireAuth` (route guard). Features read the user from the store (`useCoven((s) => s.user)`), never from Clerk directly.
+- Clerk modals are restyled through the `appearance` object in `auth.tsx` and sit in the `clerk` CSS layer so Tailwind doesn't fight them.
 
 ---
 
@@ -57,18 +65,22 @@ Each person owns one full vertical slice, UI plus logic. Stay inside your own fo
 │   ├── scan-pantry.ts        # Person 4
 │   └── draft-message.ts      # Person 3
 ├── public/data/
-│   ├── buildings.json        # UofT buildings (from Cobalt datasets)
 │   ├── indoor-graph.json     # hand-mapped indoor connections (Person 4)
-│   ├── massing-stgeorge.geojson  # clipped Toronto 3D Massing (Person 1)
-│   ├── footpaths.geojson     # optional OSM footways for St. George (Person 1)
+│   ├── massing-stgeorge.geojson  # clipped Toronto 3D Massing, 1,189 footprints (Person 1, done)
 │   └── dining.json           # small dining/café menu file (Person 4)
+├── scripts/
+│   └── clip-massing.py       # regenerates massing-stgeorge.geojson from the City shapefile
 └── src/
-    ├── app/                  # shell, router, monster picker (Person 1)
+    ├── app/                  # shell, router, landing scenery (Person 1)
+    │   ├── App.tsx           # routes. Swap a ComingSoon element for your page when it lands
+    │   └── routes/           # Landing, Picker (monster picker), ComingSoon placeholder
     ├── shared/
     │   ├── types.ts          # shared contracts, see section 5
     │   ├── store.ts          # shared app state
     │   ├── mocks.ts          # fake versions of every contract
-    │   ├── tokens.ts         # design tokens
+    │   ├── tokens.ts         # design tokens + monster copy (name, curse, need, route)
+    │   ├── auth.tsx          # Clerk or demo-mode auth, see 3.1
+    │   ├── sprites/          # pixel-art sprites as text grids (Person 1)
     │   └── ui/               # shared components (Person 1)
     └── features/
         ├── zombie/
@@ -185,6 +197,7 @@ export function planZombieDay(date: Date): Promise<CalendarEvent[]>;
 
 ### Shared state (`src/shared/store.ts`)
 
+- `user` and `authReady`, set by `src/shared/auth.tsx` (`CovenUser` in `types.ts`)
 - `monster`, the selected monster
 - `assessments`, written by Banshee, read by Zombie
 - `events`, the user's classes and planned blocks
@@ -196,6 +209,13 @@ export function planZombieDay(date: Date): Promise<CalendarEvent[]>;
 ## 6. Features
 
 ### 6.1 Vampire, sun-safe routing (Person 1)
+
+Status: working end to end on real data. Notes for whoever touches it:
+- Massing is the City's 2025 3D Massing shapefile. Despite the `_WGS84` name its geometry is EPSG:3857, `scripts/clip-massing.py` converts it. "Site Plan" footprints with no height inherit the tallest LiDAR part inside them. Bahen and Myhal are still under-represented, so `massingOverrides` in `campus.ts` adds them back from their OSM outlines.
+- The walking graph is authored in a street-aligned local frame (`campus.ts`, metres, St. George centreline is `u = 0`, rotated 16.7°) and calibrated against OSM. Sidewalks sit at `u = ±12`.
+- Only the Galbraith to Sandford Fleming indoor link is confirmed. The other indoor edges are placeholders (`verified` unset) until Person 4's `indoor-graph.json` lands.
+- Logic: `planRoute()` returns the contract `RouteResult` plus drawable `pieces` (shade, sun, indoor) and the shadow polygons. `getRoute()` is the section 5 contract wrapper.
+- Base map is OSM tiles inverted with a CSS filter. CARTO now needs an API key, so don't switch back.
 
 Goal. Get between St. George buildings with as little direct sun as possible, using indoor connections, covered walkways and shaded streets.
 
@@ -248,6 +268,8 @@ Also owned by Person 4
 
 ### 6.4 Zombie, low-energy day (Person 2)
 
+Mount point: `/zombie` currently renders `ComingSoon`. `<RoutePreview />` from `src/features/vampire/RoutePreview.tsx` is ready and already shown on the picker.
+
 Goal. One click turns your day into the easiest possible version of itself. This is the finale of the demo and the home screen.
 
 How it works
@@ -279,12 +301,51 @@ Backup building data. UofT Map Library building outlines, Statistics Canada Open
 
 ## 8. Design system
 
-Person 1 publishes `src/shared/tokens.ts` and `src/shared/ui/` in the first two hours. Everyone imports from these instead of styling from scratch so the four screens look like one app.
+Pixel-art Halloween. Everyone imports from `src/shared/ui`, `src/shared/sprites` and the Tailwind tokens instead of styling from scratch, so the four screens look like one app.
 
-- Dark theme by default, one accent color per monster (vampire red, banshee pale blue, hob ember orange, zombie sickly yellow-green)
-- Shared components, `Button`, `Card`, `PageHeader`, `MoonIcon`, `Loading`, `EmptyState`
-- Every screen has a loading state and an empty state, the demo cannot show a blank screen
-- Mobile friendly, judges may open it on a phone
+**Palette** (Tailwind names from `@theme` in `src/index.css`, mirrored in `src/shared/tokens.ts` for Leaflet/canvas)
+
+| Token | Hex | Use |
+|---|---|---|
+| `night` | `#0b0a14` | page background |
+| `dusk` | `#13111f` | headers, sidebars |
+| `panel` / `panel-hi` | `#1a1730` / `#262142` | cards, inputs |
+| `edge` | `#3a3360` | pixel borders |
+| `bone` | `#f4ecd8` | body text |
+| `ash` | `#9c94b8` | secondary text |
+| `moon` | `#f6e7a1` | highlights |
+| `vampire` | `#d7263d` | Vampire accent |
+| `banshee` | `#9ad1ff` | Banshee accent |
+| `hob` | `#ff7a1a` | Hob accent |
+| `zombie` | `#a8d84e` | Zombie accent |
+
+Each accent has a `-dark` variant for pressed and shaded states.
+
+**Type.** `font-display` (Pixelify Sans) for headings and buttons, default body is `font-pixel` (VT323, 20px base). Loaded from Google Fonts in `index.html`.
+
+**Pixel rules**
+- No border radius, no blur. Borders are 4px hard edges, shadows are hard offsets (`8px 8px 0 #000`). Use `Card` or the `px-border` / `px-shadow` utilities.
+- Animations are stepped (`steps()`), never smooth easing. Use the utilities `anim-bob`, `anim-twinkle`, `anim-flap`, `anim-rise`, `anim-smoke`. `prefers-reduced-motion` turns them off globally, and `PixelSprite` stops cycling frames.
+- **All avatars and characters go through `PixelSprite`.** Never use an image file for a monster.
+
+**Sprites** (`src/shared/sprites/`). Drawn as text grids, one character per pixel, `.` transparent, with a palette per sprite. Author the left half and `mirror()` it, then `paint()` asymmetric details (the zombie's reaching arm, the hob's spoon). Frames are full grids, usually the base plus a small `paint()` patch (a blink). `monsterSprites[monster]` gives each monster's sprite; `bat`, `tombstone`, `sun` are decor.
+
+**Shared components** (`src/shared/ui`)
+- `PixelSprite`, renders a sprite as crisp SVG, animates frames, `tint` to recolor
+- `PixelButton` / `PixelLink`, `accent` (monster) and `variant` (`solid`, `ghost`), `size` (`md`, `lg`)
+- `Card`, pixel panel, optional `accent` border
+- `PageHeader`, every feature page starts with `<PageHeader monster="hob" title=… subtitle=…/>`. It includes the account button
+- `MoonIcon`, pixel moon for a `CrunchWeek['phase']` (Banshee)
+- `Loading` (flapping bat), `EmptyState` (tombstone)
+- `Starfield`, twinkling background
+
+Every screen has a loading state and an empty state, the demo cannot show a blank screen. Mobile friendly down to 400px, judges may open it on a phone.
+
+**Performance rules** (measured, these were real lag sources)
+- No `setInterval` + `setState` animation loops. `PixelSprite` animates frames purely in CSS; a dozen React-driven sprites caused constant stutter.
+- Heavy computation goes in a Web Worker (see `src/features/vampire/exposure.worker.ts`), never on the main thread during input.
+- Don't render hundreds of Leaflet `Polygon`s. Draw bulk geometry with `CanvasRings` (one canvas path, no `closePath()` per ring).
+- The dev server is several times slower than production because of React's dev instrumentation. Judge smoothness, and run the demo, on `npm run build && npm run preview`.
 
 ---
 
