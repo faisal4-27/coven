@@ -93,6 +93,8 @@ function sfxFiles(): string[] {
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss(), localApiPlugin(mode)],
+  // Also expose Vercel's Clerk integration name (public key only).
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_CLERK_PUBLISHABLE'],
   // Read at server start and build. Restart `npm run dev` after adding a file to public/sfx.
   define: { __SFX_FILES__: JSON.stringify(sfxFiles()) },
   // Pre-bundle deps that are only reached through lazy routes. Otherwise Vite discovers them on the first
