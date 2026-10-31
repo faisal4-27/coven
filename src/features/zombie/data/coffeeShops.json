@@ -1,0 +1,125 @@
+{
+  "_note": "Generated from OpenStreetMap (Nominatim) by scripts/zombie-build-places.js, © OpenStreetMap contributors. Re-run instead of hand-editing.",
+  "items": [
+    {
+      "id": "osm-n11618878435",
+      "name": "Second Cup",
+      "street": "St. George Street",
+      "lat": 43.660718,
+      "lng": -79.396431,
+      "nearestBuildingId": "osm-w403302492"
+    },
+    {
+      "id": "osm-n468417887",
+      "name": "Starbucks",
+      "street": "St. George Street",
+      "lat": 43.664594,
+      "lng": -79.399839,
+      "nearestBuildingId": "osm-w7991747"
+    },
+    {
+      "id": "osm-n333553037",
+      "name": "Second Cup",
+      "street": "St. George Street",
+      "lat": 43.662556,
+      "lng": -79.398802,
+      "nearestBuildingId": "osm-w7948423"
+    },
+    {
+      "id": "osm-n13794265797",
+      "name": "CHICHA San Chen",
+      "street": "King's College Circle",
+      "lat": 43.661113,
+      "lng": -79.393794,
+      "nearestBuildingId": "osm-w988615299"
+    },
+    {
+      "id": "osm-n333553179",
+      "name": "Second Cup",
+      "street": "College Street",
+      "lat": 43.659261,
+      "lng": -79.396916,
+      "nearestBuildingId": "osm-w141691917"
+    },
+    {
+      "id": "osm-n10879354442",
+      "name": "Café Reznikoff",
+      "street": "St. George Street",
+      "lat": 43.663112,
+      "lng": -79.397781,
+      "nearestBuildingId": "osm-w7948423"
+    },
+    {
+      "id": "osm-n3779624796",
+      "name": "Acacia Cafe",
+      "street": "Hoskin Avenue",
+      "lat": 43.664501,
+      "lng": -79.395279,
+      "nearestBuildingId": "osm-r1989"
+    },
+    {
+      "id": "osm-n595418845",
+      "name": "Second Cup",
+      "street": "St. George Street",
+      "lat": 43.665214,
+      "lng": -79.398209,
+      "nearestBuildingId": "osm-w7991747"
+    },
+    {
+      "id": "osm-n13765064554",
+      "name": "The Owlery Café",
+      "street": "King's College Circle",
+      "lat": 43.662686,
+      "lng": -79.395559,
+      "nearestBuildingId": "osm-r14756874"
+    },
+    {
+      "id": "osm-n10110247349",
+      "name": "Starbucks",
+      "street": "College Street",
+      "lat": 43.65856,
+      "lng": -79.395608,
+      "nearestBuildingId": "osm-w141691917"
+    },
+    {
+      "id": "osm-n938000027",
+      "name": "Diabolos Coffee Bar",
+      "street": "Erindale Walk",
+      "lat": 43.6631,
+      "lng": -79.396465,
+      "nearestBuildingId": "osm-w7948423"
+    },
+    {
+      "id": "osm-n253818647",
+      "name": "Cafe AC",
+      "street": "Harbord Street",
+      "lat": 43.663001,
+      "lng": -79.401258,
+      "nearestBuildingId": "osm-w7991747"
+    },
+    {
+      "id": "osm-n304899767",
+      "name": "Second Cup",
+      "street": "Harbord Street",
+      "lat": 43.663346,
+      "lng": -79.401769,
+      "nearestBuildingId": "osm-w7991747"
+    },
+    {
+      "id": "osm-n11384840089",
+      "name": "Terima Coffee + Pantry Bar",
+      "street": "Queen's Park Crescent West",
+      "lat": 43.665847,
+      "lng": -79.393758,
+      "nearestBuildingId": "osm-r1989"
+    },
+    {
+      "id": "osm-n845505194",
+      "name": "18feet",
+      "street": "College Street",
+      "lat": 43.659925,
+      "lng": -79.391614,
+      "nearestBuildingId": "osm-w988615299"
+    }
+  ]
+}
