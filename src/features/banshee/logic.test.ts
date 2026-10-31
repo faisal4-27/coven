@@ -78,6 +78,28 @@ test('lighter days are preferred before adding more work to a heavy week', () =>
   assert.equal(byDay.get('2026-11-16') ?? 0, 0)
 })
 
+test('quiet weeks get up to 8h a day, the crunch week at most 2h', () => {
+  const at = (date: string, weight: number, id: string, time?: string) => item({ id, date, weight, time })
+  const items = [
+    at('2026-11-05', 0, 'w1'),
+    at('2026-11-10', 5, 'w2a'), at('2026-11-12', 8, 'w2b'), at('2026-11-13', 12, 'w2c'),
+    at('2026-11-17', 25, 'w3a', '18:00'), at('2026-11-18', 30, 'w3b', '10:00'), at('2026-11-19', 10, 'w3c'),
+    at('2026-11-25', 10, 'w4'),
+  ]
+  const weeks = detectCrunchWeeks(items)
+  assert.deepEqual(weeks.map(week => week.load), [0, 25, 65, 10])
+  const plan = createStudyPlan(items, weeks, [], defaultSettings(new Date('2026-11-02T08:00:00')))
+  assert.equal(plan.unscheduled.length, 0)
+  const byDay = new Map<string, number>()
+  for (const block of plan.blocks) {
+    const day = dayKey(new Date(block.start))
+    byDay.set(day, (byDay.get(day) ?? 0) + (+new Date(block.end) - +new Date(block.start)) / 60000)
+  }
+  const perDay = (week: string) => [...byDay].filter(([day]) => monday(day) === week).map(([, minutes]) => minutes)
+  assert.ok(Math.max(...perDay('2026-11-02')) > 420)
+  assert.ok(perDay('2026-11-16').every(minutes => minutes <= 120))
+})
+
 test('past deadlines report unscheduled work and invalid inputs fail clearly', () => {
   const items = [item({ date: '2026-11-01' })]
   const plan = createStudyPlan(items, detectCrunchWeeks(items), [], settings)

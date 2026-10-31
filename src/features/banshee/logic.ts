@@ -45,7 +45,10 @@ export interface StudySettings {
   now: string
   startTime: string
   endTime: string
+  /** Daily study cap in a quiet (0%) week. */
   dailyMinutes: number
+  /** Daily study cap in a full-moon (60%+) week; weeks in between scale linearly. */
+  crunchDailyMinutes: number
   mode: 'pomodoro' | 'deep'
   lookbackDays: number
 }
@@ -60,20 +63,16 @@ export interface StudyPlan {
 }
 
 export function defaultSettings(now = new Date()): StudySettings {
-  return { now: now.toISOString(), startTime: '09:00', endTime: '20:00', dailyMinutes: 180, mode: 'pomodoro', lookbackDays: 21 }
+  return { now: now.toISOString(), startTime: '09:00', endTime: '20:00', dailyMinutes: 480, crunchDailyMinutes: 120, mode: 'pomodoro', lookbackDays: 21 }
 }
 
 interface Interval { start: number; end: number }
 const overlaps = (a: Interval, b: Interval) => a.start < b.end && b.start < a.end
 
-/** Give quiet weeks more room and protect heavy weeks from becoming heavier. */
-function weekPriority(load: number): number {
-  if (load >= 60) return 0.25
-  if (load >= 45) return 0.5
-  if (load >= 30) return 0.85
-  if (load >= 15) return 1.35
-  if (load > 0) return 1.75
-  return 2.25
+/** Quiet weeks get the full daily cap; the cap shrinks toward the crunch cap as the week's grade load nears 60%. */
+export function dailyCap(load: number, settings: Pick<StudySettings, 'dailyMinutes' | 'crunchDailyMinutes'>): number {
+  const crunch = Math.min(settings.crunchDailyMinutes, settings.dailyMinutes)
+  return settings.dailyMinutes - (settings.dailyMinutes - crunch) * Math.min(1, Math.max(0, load) / 60)
 }
 
 /** Adds explicit break reservations without changing the shared StudyBlock contract. */
@@ -82,6 +81,7 @@ export function createStudyPlan(items: Assessment[], weeks: CrunchWeek[], busy: 
   const now = new Date(settings.now)
   if (!Number.isFinite(+now)) throw new Error('Choose a valid planning date.')
   if (!Number.isFinite(settings.dailyMinutes) || settings.dailyMinutes < 1 || settings.dailyMinutes > 720) throw new Error('Daily study limit must be 1–720 minutes.')
+  if (!Number.isFinite(settings.crunchDailyMinutes) || settings.crunchDailyMinutes < 1 || settings.crunchDailyMinutes > 720) throw new Error('Crunch-week study limit must be 1–720 minutes.')
   if (!Number.isInteger(settings.lookbackDays) || settings.lookbackDays < 1 || settings.lookbackDays > 21) throw new Error('Plan 1–21 days before each deadline.')
   if (atTime(dayKey(now), settings.endTime) <= atTime(dayKey(now), settings.startTime)) throw new Error('Study hours must end after they start.')
   const occupied: Interval[] = busy.map(event => {
@@ -127,14 +127,14 @@ export function createStudyPlan(items: Assessment[], weeks: CrunchWeek[], busy: 
       const days = [...(candidates.get(item.id) ?? [])].sort((a, b) => {
         const score = (day: string) => {
           const load = loads.get(monday(day)) ?? 0
-          // Lower scores win: quiet weeks absorb more preparation, while
-          // full-moon weeks only receive work when it cannot be moved.
-          return (totals.get(day) ?? 0) / weekPriority(load) + load * 0.25
+          // Lower scores win: quiet weeks fill up first, and a week carrying
+          // 10%+ of the grade is only used once lighter days are full.
+          return (totals.get(day) ?? 0) / dailyCap(load, settings) + load / 10
         }
         return score(a) - score(b) || a.localeCompare(b)
       })
       for (const day of days) {
-        const capacity = Math.floor(settings.dailyMinutes - (totals.get(day) ?? 0))
+        const capacity = Math.floor(dailyCap(loads.get(monday(day)) ?? 0, settings) - (totals.get(day) ?? 0))
         const minutes = Math.min(focus, left, capacity)
         if (minutes <= 0) continue
         const breakMinutes = ((counts.get(day) ?? 0) + 1) % 4 === 0 ? (settings.mode === 'deep' ? 20 : 15) : rest
