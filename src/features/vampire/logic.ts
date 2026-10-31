@@ -67,23 +67,32 @@ for (const edge of graph) {
 
 /** 15 minute buckets, shadows barely move inside one. */
 const bucket = (at: Date) => Math.floor(at.getTime() / 900_000)
-const shadowCache = new Map<number, { sun: Sun; shadows: Shadow[]; sunny: Map<Edge, boolean[]> }>()
+interface Exposure {
+  sun: Sun
+  shadows: Shadow[]
+  sunny: Map<Edge, boolean[]>
+}
 
-async function exposureAt(at: Date) {
+// Promises, not results, so concurrent callers (shadiest + fastest) share one computation.
+const shadowCache = new Map<number, Promise<Exposure>>()
+
+function exposureAt(at: Date) {
   const key = bucket(at)
-  const hit = shadowCache.get(key)
-  if (hit) return hit
-  const footprints = await loadMassing()
-  const sun = sunAt(new Date(key * 900_000 + 450_000))
-  const shadows = castShadows(footprints, sun)
-  const sunny = new Map<Edge, boolean[]>()
-  for (const edge of graph) {
-    sunny.set(edge, edge.samples.map((s) => !edge.indoor && sun.altitude > 0 && !inShadow(s.p, shadows)))
+  let hit = shadowCache.get(key)
+  if (!hit) {
+    if (shadowCache.size > 200) shadowCache.clear()
+    hit = loadMassing().then((footprints) => {
+      const sun = sunAt(new Date(key * 900_000 + 450_000))
+      const shadows = castShadows(footprints, sun)
+      const sunny = new Map<Edge, boolean[]>()
+      for (const edge of graph) {
+        sunny.set(edge, edge.samples.map((s) => !edge.indoor && sun.altitude > 0 && !inShadow(s.p, shadows)))
+      }
+      return { sun, shadows, sunny }
+    })
+    shadowCache.set(key, hit)
   }
-  const out = { sun, shadows, sunny }
-  if (shadowCache.size > 200) shadowCache.clear()
-  shadowCache.set(key, out)
-  return out
+  return hit
 }
 
 function sunMetres(edge: Edge, flags: boolean[]) {

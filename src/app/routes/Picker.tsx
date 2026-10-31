@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMoonIllumination } from 'suncalc'
 import { AccountButton } from '../../shared/auth'
@@ -9,6 +9,7 @@ import type { CrunchWeek } from '../../shared/types'
 import { Card, MoonIcon, PixelSprite, Starfield } from '../../shared/ui'
 import { RoutePreview } from '../../features/vampire/RoutePreview'
 import { sunTimes } from '../../features/vampire/logic'
+import { loadMassing } from '../../features/vampire/shadows'
 
 function moonPhase(phase: number): CrunchWeek['phase'] {
   // suncalc phase: 0 new, 0.25 first quarter, 0.5 full, 0.75 last quarter. Waning maps onto the same shapes.
@@ -33,6 +34,15 @@ function greeting(d: Date) {
 export function Picker() {
   const navigate = useNavigate()
   const { user, now, setMonster } = useCoven()
+  // Warm up the Vampire page while the user is choosing, so opening it is instant.
+  useEffect(() => {
+    const id = setTimeout(() => {
+      void import('../../features/vampire/VampirePage')
+      void loadMassing()
+    }, 300)
+    return () => clearTimeout(id)
+  }, [])
+
   const sky = useMemo(() => {
     const { sunrise, sunset } = sunTimes(now)
     const moon = getMoonIllumination(now)

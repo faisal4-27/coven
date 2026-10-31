@@ -23,7 +23,15 @@ dist-ssr
 *.sln
 *.sw?
 
-# env
+# Secrets and API keys. Never commit these; put them in Vercel env vars for deploys.
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Clerk CLI claim files and keyless dev keys
+.clerk/
+
+# Vercel CLI project link and pulled env
+.vercel

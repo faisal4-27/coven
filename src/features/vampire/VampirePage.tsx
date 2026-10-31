@@ -1,5 +1,5 @@
 import L from 'leaflet'
-import { useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { MapContainer, Marker, Pane, Polygon, Polyline, TileLayer, Tooltip } from 'react-leaflet'
 import { useCoven } from '../../shared/store'
 import { sun as sunSprite, vampire } from '../../shared/sprites'
@@ -22,15 +22,23 @@ const pieceStyle = {
   sun: { color: '#7a3d00', weight: 11, dash: undefined, top: colors.sun, topWeight: 7 },
 } as const
 
+const iconCache = new Map<string, L.DivIcon>()
+
+/** Cached so markers keep their DOM across renders instead of swapping icons every time. */
 function pinIcon(code: string, kind: 'from' | 'to' | 'idle') {
+  const key = `${code}:${kind}`
+  const hit = iconCache.get(key)
+  if (hit) return hit
   const bg = kind === 'from' ? '#d7263d' : kind === 'to' ? colors.moon : colors.panel
   const fg = kind === 'idle' ? colors.bone : colors.night
-  return L.divIcon({
+  const icon = L.divIcon({
     className: '',
     iconSize: [36, 22],
     iconAnchor: [18, 11],
     html: `<div style="background:${bg};color:${fg};font:16px/22px VT323,monospace;text-align:center;box-shadow:0 0 0 2px #000,3px 3px 0 2px #000">${code}</div>`,
   })
+  iconCache.set(key, icon)
+  return icon
 }
 
 function useFootprints() {
@@ -41,7 +49,7 @@ function useFootprints() {
   return fp
 }
 
-function CampusMap({ plan, from, to, onPick }: { plan: RoutePlan | null; from: string; to: string; onPick: (code: string) => void }) {
+const CampusMap = memo(function CampusMap({ plan, from, to, onPick }: { plan: RoutePlan | null; from: string; to: string; onPick: (code: string) => void }) {
   const footprints = useFootprints()
   const buildingRings = useMemo(() => footprints?.map((f) => f.ring.map(flip)) ?? [], [footprints])
   const shadowRings = useMemo(() => plan?.shadows.map((s) => s.ring.map(flip)) ?? [], [plan])
@@ -128,7 +136,7 @@ function CampusMap({ plan, from, to, onPick }: { plan: RoutePlan | null; from: s
       ))}
     </MapContainer>
   )
-}
+})
 
 function Select({ label, value, onChange, exclude }: { label: string; value: string; onChange: (v: string) => void; exclude: string }) {
   return (
@@ -177,7 +185,9 @@ export function VampirePage() {
   const [to, setTo] = useState('SS')
   const [mode, setMode] = useState<RouteMode>('shadiest')
   const [at, setAt] = useState(() => demoTime(now, sunrise, sunset))
-  const { plans, error } = useRoutePlans(from, to, at)
+  // The slider and clock update instantly; route and shadows catch up without blocking input.
+  const deferredAt = useDeferredValue(at)
+  const { plans, error } = useRoutePlans(from, to, deferredAt)
   const plan = plans?.[mode] ?? null
   const night = plan ? plan.sun.altitude <= 0 : false
 
@@ -189,10 +199,12 @@ export function VampirePage() {
   const minutes = Math.round((at.getTime() - dayStart.getTime()) / 60_000)
   const sunPct = Math.min(1, Math.max(0, (at.getTime() - sunrise.getTime()) / (sunset.getTime() - sunrise.getTime())))
 
-  const pick = (code: string) => {
-    if (code === from || code === to) return
-    setTo(code)
-  }
+  const pick = useCallback(
+    (code: string) => {
+      if (code !== from && code !== to) setTo(code)
+    },
+    [from, to],
+  )
 
   return (
     <div className="flex min-h-dvh flex-col" style={{ ['--accent' as string]: '#d7263d' }}>
