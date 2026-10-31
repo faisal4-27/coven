@@ -66,6 +66,18 @@ test('full moon allocations move to available quiet weeks', () => {
   assert.equal(plan.unscheduled.length, 0)
 })
 
+test('lighter days are preferred before adding more work to a heavy week', () => {
+  const items = [item({ weight: 12, date: '2026-11-18' })]
+  const plan = createStudyPlan(items, detectCrunchWeeks(items), [], { ...settings, dailyMinutes: 60 })
+  const byDay = new Map<string, number>()
+  for (const block of plan.blocks) {
+    const day = dayKey(new Date(block.start))
+    byDay.set(day, (byDay.get(day) ?? 0) + (+new Date(block.end) - +new Date(block.start)) / 60000)
+  }
+  assert.ok((byDay.get('2026-11-02') ?? 0) > 0)
+  assert.equal(byDay.get('2026-11-16') ?? 0, 0)
+})
+
 test('past deadlines report unscheduled work and invalid inputs fail clearly', () => {
   const items = [item({ date: '2026-11-01' })]
   const plan = createStudyPlan(items, detectCrunchWeeks(items), [], settings)

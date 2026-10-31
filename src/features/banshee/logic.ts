@@ -66,6 +66,16 @@ export function defaultSettings(now = new Date()): StudySettings {
 interface Interval { start: number; end: number }
 const overlaps = (a: Interval, b: Interval) => a.start < b.end && b.start < a.end
 
+/** Give quiet weeks more room and protect heavy weeks from becoming heavier. */
+function weekPriority(load: number): number {
+  if (load >= 60) return 0.25
+  if (load >= 45) return 0.5
+  if (load >= 30) return 0.85
+  if (load >= 15) return 1.35
+  if (load > 0) return 1.75
+  return 2.25
+}
+
 /** Adds explicit break reservations without changing the shared StudyBlock contract. */
 export function createStudyPlan(items: Assessment[], weeks: CrunchWeek[], busy: CalendarEvent[], settings = defaultSettings()): StudyPlan {
   validateAssessments(items)
@@ -115,7 +125,12 @@ export function createStudyPlan(items: Assessment[], weeks: CrunchWeek[], busy: 
       if (left <= 0) continue
       const due = +atTime(item.date, item.time ?? '23:59')
       const days = [...(candidates.get(item.id) ?? [])].sort((a, b) => {
-        const score = (day: string) => (loads.get(monday(day)) ?? 0) >= 60 ? 10_000 + (totals.get(day) ?? 0) : totals.get(day) ?? 0
+        const score = (day: string) => {
+          const load = loads.get(monday(day)) ?? 0
+          // Lower scores win: quiet weeks absorb more preparation, while
+          // full-moon weeks only receive work when it cannot be moved.
+          return (totals.get(day) ?? 0) / weekPriority(load) + load * 0.25
+        }
         return score(a) - score(b) || a.localeCompare(b)
       })
       for (const day of days) {
