@@ -6,7 +6,6 @@ import { PixelButton } from '../../../shared/ui';
 import { sortClasses } from '../planner/planDay';
 import { actualStart } from '../planner/time';
 import type { Building, ClassEvent } from '../planner/types';
-import type { Bounds } from '../search/searchBuildings';
 import { BuildingPicker } from './BuildingPicker';
 import { inputClass, labelText } from './styles';
 
@@ -20,13 +19,12 @@ export interface NewClass {
 interface Props {
   classes: ClassEvent[];
   buildings: Building[];
-  bounds: Bounds;
   onAdd: (c: NewClass) => void;
   onRemove: (id: string) => void;
   onClear: () => void;
 }
 
-export function ClassInput({ classes, buildings, bounds, onAdd, onRemove, onClear }: Props) {
+export function ClassInput({ classes, buildings, onAdd, onRemove, onClear }: Props) {
   const uid = useId(); // unique ids so labels still work if this renders twice
   const [title, setTitle] = useState('');
   const [building, setBuilding] = useState<Building | null>(buildings[0] ?? null);
@@ -70,7 +68,7 @@ export function ClassInput({ classes, buildings, bounds, onAdd, onRemove, onClea
             <input className={inputClass} type="time" value={end} onChange={(e) => setEnd(e.target.value)} required />
           </label>
         </div>
-        <BuildingPicker known={buildings} bounds={bounds} value={building} onChange={setBuilding} />
+        <BuildingPicker known={buildings} value={building} onChange={setBuilding} />
         <PixelButton accent="zombie" type="submit" className="self-start">Add class</PixelButton>
       </form>
       <p className="min-h-[1.25em] text-lg text-vampire" role="alert">{error}</p>{/* always rendered so screen readers announce changes */}

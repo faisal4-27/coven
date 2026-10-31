@@ -1,9 +1,10 @@
 // Zombie mode screen: classes in, laziest possible day out.
 
 import { useDeferredValue, useMemo, useRef, useState } from 'react';
+import { useAudioReady } from '../../shared/sound';
 import { accents } from '../../shared/tokens';
-import { Card, EmptyState, Loading, PageHeader, PixelButton } from '../../shared/ui';
-import { zombieData, hasPlaceholders, hasShortcuts, basemap } from './data';
+import { Card, EmptyState, Loading, PageHeader } from '../../shared/ui';
+import { zombieData, hasPlaceholders } from './data';
 import { planDay, sortClasses } from './planner/planDay';
 import type { Building, ClassEvent, Plan, ZombieData } from './planner/types';
 import { ClassInput } from './components/ClassInput';
@@ -12,7 +13,6 @@ import { CampusMap } from './components/CampusMap';
 import type { MapPlace, MapSegment } from './components/CampusMap';
 import { DayTimeline } from './components/DayTimeline';
 import { StatsCard } from './components/StatsCard';
-import { CoffeeCard } from './components/CoffeeCard';
 import { MODE_COLOR, MODE_DASHED, MODE_LABEL } from './components/modes';
 import { ScheduleUpload } from './components/ScheduleUpload';
 import type { DayClass } from './components/ScheduleUpload';
@@ -34,16 +34,14 @@ const vias = new Map<string, string>([
   ...zombieData.transitHops.map((h): [string, string] => [h.id, `line ${h.line}`]),
 ]); // short label for whatever shortcut a leg used
 const viaLabel = (id?: string) => (id ? vias.get(id) ?? id : '');
-const isEstimate = zombieData.distances.source === 'estimate' || zombieData.distances.source === 'mixed'; // anything not fully routed gets the "estimate" disclaimer
 
 export function ZombieMode() {
   const [day, setDay] = useState<Weekday>(startDay);
   const [uploaded, setUploaded] = useState<Week>({}); // from the timetable, replaced whenever the upload changes
   const [manual, setManual] = useState<Week>({}); // added by hand, kept across uploads
   const [searched, setSearched] = useState<Building[]>([]); // buildings found through live search this session
-  const [soundOn, setSoundOn] = useState(false); // sound is opt-in
   const nextId = useRef(1);
-  const blip = useBlip(soundOn);
+  const blip = useBlip(useAudioReady()); // follows the app-wide speaker button
   const classes = useMemo(() => [...(uploaded[day] ?? []), ...(manual[day] ?? [])], [uploaded, manual, day]);
   const counts = Object.fromEntries(WEEKDAYS.map((d) => [d, (uploaded[d]?.length ?? 0) + (manual[d]?.length ?? 0)])) as Record<Weekday, number>;
   const planned = useDeferredValue(classes); // lets React show the "planning" state if a re-plan ever gets slow
@@ -113,11 +111,7 @@ export function ZombieMode() {
 
   return (
     <div className="flex min-h-dvh flex-col" style={{ ['--accent' as string]: accents.zombie.main, ['--accent-dark' as string]: accents.zombie.dark }}>
-      <PageHeader monster="zombie" title="Zombie mode" subtitle="Minimum walking, maximum caffeine">
-        <PixelButton accent="zombie" variant="ghost" aria-pressed={soundOn} onClick={() => setSoundOn((s) => !s)}>
-          Sound {soundOn ? 'on' : 'off'}
-        </PixelButton>
-      </PageHeader>
+      <PageHeader monster="zombie" title="Zombie mode" subtitle="Minimum walking, maximum caffeine" />
 
       <div className="border-b-4 border-edge bg-[#1d2a1a] px-4 py-2 text-center text-xl text-zombie" role="note">
         {hasPlaceholders
@@ -149,12 +143,13 @@ export function ZombieMode() {
                 <p className="text-xl">Brains can't plan that: {result.message}. Fix that class and we'll try again.</p>
               </Card>
             ) : result.status === 'ok' && (
-              <>
-                <StatsCard totals={result.plan.totals} isEstimate={isEstimate} hasShortcuts={hasShortcuts} />
-                <CoffeeCard stops={result.plan.coffeeStops} classes={result.sorted} gapCount={result.plan.legs.length} nameOf={nameOf} />
-                <DayTimeline classes={result.sorted} plan={result.plan} nameOf={nameOf} viaLabel={viaLabel} />
+              <Card accent="zombie" className="flex flex-col gap-6">
+                <StatsCard totals={result.plan.totals} />
+                <div className="border-t-4 border-edge pt-4">
+                  <DayTimeline classes={result.sorted} plan={result.plan} nameOf={nameOf} viaLabel={viaLabel} />
+                </div>
                 <Legend />
-              </>
+              </Card>
             )}
           </div>
 
@@ -162,7 +157,6 @@ export function ZombieMode() {
           <ClassInput
             classes={classes}
             buildings={data.buildings}
-            bounds={basemap.bbox}
             onAdd={addClass}
             onRemove={removeClass}
             onClear={clear}
