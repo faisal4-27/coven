@@ -2,6 +2,8 @@
 // Nothing plays until the first pointerdown or keydown, a missing file is skipped silently,
 // and every failure is swallowed: sound must never break the app.
 import { useCoven } from './store'
+// Written by scripts/make-voices.py: voiced line id -> duration in ms. A plain import, so it updates live.
+import voiceLines from './voiceLines.json'
 import type { Monster } from './types'
 
 export const SOUND_NAMES = [
@@ -133,6 +135,38 @@ export function unlockAudio() {
 
 let installed = false
 
+let voice: HTMLAudioElement | null = null
+
+/** True once sound can actually play: after the first interaction and while not muted. */
+export const audioReady = () => unlocked && !isMuted()
+
+/** Length of a voiced line in ms when it will actually be heard, otherwise null. */
+export function voiceMs(id: string): number | null {
+  const ms = (voiceLines as Record<string, number>)[id]
+  return audioReady() && ms ? ms : null
+}
+
+/** Speak a dialogue line (see lineId in dialogue.ts). Stops any line already speaking, so only one voice plays. */
+export function playVoice(id: string, volume = 0.6): HTMLAudioElement | null {
+  stopVoice()
+  if (!voiceMs(id) || typeof Audio === 'undefined') return null
+  try {
+    const el = new Audio(`/voice/${id}.mp3`)
+    el.volume = clamp(volume)
+    el.play().catch(() => {})
+    voice = el
+    return el
+  } catch {
+    return null
+  }
+}
+
+export function stopVoice(el: HTMLAudioElement | null = voice) {
+  el?.pause()
+  if (el === voice) voice = null
+}
+
+
 /** Call once at startup. Unlocks on the first pointerdown or keydown anywhere in the document. */
 export function installAudioUnlock() {
   if (installed || typeof document === 'undefined') return
@@ -149,6 +183,7 @@ export function installAudioUnlock() {
   document.addEventListener('visibilitychange', () => (document.hidden ? stopAmbient() : startAmbient()))
   useCoven.subscribe((s, prev) => {
     if (s.muted === prev.muted) return
+    if (s.muted) stopVoice()
     if (s.muted) stopAmbient()
     else startAmbient()
   })

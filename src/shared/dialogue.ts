@@ -153,3 +153,22 @@ export function chosenLine(monster: Monster): string {
   const lines = dialogue[monster].pickerChosen
   return lines[Math.floor(Math.random() * lines.length)]
 }
+
+/**
+ * Stable id for a spoken line, used as its voice file name in public/voice. Editing a line changes its id,
+ * so a stale recording is never played for new text; the line just falls back to typing blips.
+ */
+export function lineId(monster: Monster, text: string): string {
+  let h = 5381
+  for (const ch of text) h = ((h * 33) ^ ch.codePointAt(0)!) >>> 0
+  return `${monster}-${h.toString(36)}`
+}
+
+/** Every line, most-heard first. scripts/make-voices.py voices them in this order. */
+export function allLines(): { monster: Monster; text: string; id: string }[] {
+  const out: { monster: Monster; text: string }[] = [...landingIntro]
+  const monsters = Object.keys(dialogue) as Monster[]
+  for (const key of ['pickerChosen', 'pickerHover', 'landing', 'daytime', 'nighttime'] as const)
+    for (const monster of monsters) for (const text of dialogue[monster][key] ?? []) out.push({ monster, text })
+  return out.map((l) => ({ ...l, id: lineId(l.monster, l.text) }))
+}

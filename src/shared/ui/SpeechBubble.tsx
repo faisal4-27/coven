@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { monsterBlip } from '../sound'
+import { useEffect, useRef, useState } from 'react'
+import { lineId } from '../dialogue'
+import { monsterBlip, playVoice, stopVoice, voiceMs } from '../sound'
 import { accents, colors } from '../tokens'
 import type { Monster } from '../types'
 
@@ -24,6 +25,8 @@ interface Props {
   text: string
   /** Which edge of the anchor the bubble lines up with. Use 'left' / 'right' near screen edges on phones. */
   align?: Align
+  /** Let the spoken line finish after the bubble unmounts, e.g. a picker choice that navigates away. */
+  keepVoice?: boolean
 }
 
 /**
@@ -37,8 +40,11 @@ export function SpeechBubble(props: Props) {
 const reducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-function Bubble({ monster, text, align = 'center' }: Props) {
+function Bubble({ monster, text, align = 'center', keepVoice = false }: Props) {
   const [shown, setShown] = useState(() => (reducedMotion() ? text.length : 0))
+  // A voiced line types in step with the voice and replaces the blips.
+  const [voiced] = useState(() => voiceMs(lineId(monster, text)))
+  const charMs = voiced ? Math.min(110, Math.max(CHAR_MS, (voiced * 0.85) / text.length)) : CHAR_MS
   // Screen readers get the whole line once, after the live region exists, instead of every typed letter.
   const [said, setSaid] = useState('')
   const accent = accents[monster].main
@@ -48,15 +54,29 @@ function Bubble({ monster, text, align = 'center' }: Props) {
     return () => clearTimeout(id)
   }, [text])
 
+  // A ref, so flipping keepVoice (a picker card being chosen mid-line) doesn't restart the voice.
+  const keep = useRef(keepVoice)
+  useEffect(() => {
+    keep.current = keepVoice
+  }, [keepVoice])
+
+  useEffect(() => {
+    if (!voiced) return
+    const el = playVoice(lineId(monster, text))
+    return () => {
+      if (!keep.current) stopVoice(el)
+    }
+  }, [voiced, monster, text])
+
   useEffect(() => {
     if (shown >= text.length) return
     const id = setTimeout(() => {
-      // The vampire stays silent, matching the rest of the sound design.
-      if (shown % BLIP_EVERY === 0 && text[shown] !== ' ' && monster !== 'vampire') monsterBlip(monster)
+      // Unvoiced lines (sound locked, or a line without a recording yet) blip as they type.
+      if (!voiced && shown % BLIP_EVERY === 0 && text[shown] !== ' ') monsterBlip(monster)
       setShown(shown + 1)
-    }, CHAR_MS)
+    }, charMs)
     return () => clearTimeout(id)
-  }, [shown, text, monster])
+  }, [shown, text, monster, voiced, charMs])
 
   return (
     <div className={`pointer-events-auto absolute bottom-full z-30 mb-4 ${boxAlign[align]}`}>

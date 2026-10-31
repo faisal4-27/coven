@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMoonIllumination } from 'suncalc'
 import { AccountButton } from '../../shared/auth'
-import { chosenLine, hoverLine } from '../../shared/dialogue'
-import { play, type SoundName } from '../../shared/sound'
+import { chosenLine, hoverLine, lineId } from '../../shared/dialogue'
+import { play, voiceMs, type SoundName } from '../../shared/sound'
 import { monsterSprites } from '../../shared/sprites'
 import { useCoven } from '../../shared/store'
 import { accents, monsters } from '../../shared/tokens'
@@ -38,7 +38,9 @@ const MONSTER_SOUND: Record<Monster, SoundName | null> = { vampire: null, banshe
 // Hover previews: at most one every 350 ms, and the same monster not again for 1.2 s.
 let lastHover = 0
 let previewing: HTMLAudioElement | null = null
-function preview(id: Monster) {
+function preview(id: Monster, line: string) {
+  // A voiced line is the monster's sound; don't stack the hover sting on top of it.
+  if (voiceMs(lineId(id, line))) return
   const now = performance.now()
   if (now - lastHover < 350) return
   lastHover = now
@@ -72,8 +74,9 @@ export function Picker() {
 
   const hover = (id: Monster) => {
     if (chosen) return
-    preview(id)
-    setSpeech({ monster: id, text: hoverLine(id, isDaytime) })
+    const text = hoverLine(id, isDaytime)
+    preview(id, text)
+    setSpeech({ monster: id, text })
   }
   const unhover = (id: Monster) => {
     if (!chosen) setSpeech((s) => (s?.monster === id ? null : s))
@@ -109,10 +112,12 @@ export function Picker() {
               onClick={() => {
                 if (chosen) return
                 previewing?.pause()
+                // Keep whatever this monster is already saying; only speak up if it was quiet (keyboard, touch).
+                const text = speech?.monster === m.id ? speech.text : chosenLine(m.id)
                 const sound = MONSTER_SOUND[m.id]
-                if (sound) play(sound, { volume: 1, cooldown: 0 })
+                if (sound && !voiceMs(lineId(m.id, text))) play(sound, { volume: 1, cooldown: 0 })
                 setChosen(m.id)
-                setSpeech({ monster: m.id, text: chosenLine(m.id) })
+                setSpeech({ monster: m.id, text })
                 leaving.current = setTimeout(() => {
                   play('transition', { volume: 0.4 })
                   setMonster(m.id)
@@ -131,7 +136,7 @@ export function Picker() {
                   style={{ background: `linear-gradient(to top, ${accents[m.id].dark}55 0 25%, transparent 25%)` }}
                 >
                   <div className={`relative ${chosen === m.id ? 'anim-bob' : 'group-hover:anim-bob'}`}>
-                    {speech?.monster === m.id && <SpeechBubble monster={m.id} text={speech.text} />}
+                    {speech?.monster === m.id && <SpeechBubble monster={m.id} text={speech.text} keepVoice={chosen === m.id} />}
                     <PixelSprite sprite={monsterSprites[m.id]} scale={5} />
                   </div>
                 </div>
