@@ -1,0 +1,4 @@
+{
+  "_note": "Hand-map real indoor shortcuts here. Use building ids from buildings.json. Links work both ways, times are 24h HH:MM. Example shape: { \"id\": \"I1\", \"fromId\": \"osm-w...\", \"toId\": \"osm-w...\", \"meters\": 0, \"minutes\": 0, \"openFrom\": \"HH:MM\", \"openTo\": \"HH:MM\" }",
+  "items": []
+}
