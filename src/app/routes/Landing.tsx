@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AuthButtons } from '../../shared/auth'
+import { dialogue, landingIntro, lineId, nextLine } from '../../shared/dialogue'
 import { clerkEnabled } from '../../shared/env'
+import { voiceMs } from '../../shared/sound'
 import { bat, monsterSprites } from '../../shared/sprites'
 import { accents, monsters, type MonsterInfo } from '../../shared/tokens'
-import { Card, PixelSprite, Starfield } from '../../shared/ui'
+import type { Monster } from '../../shared/types'
+import { Card, PixelSprite, SpeechBubble, Starfield } from '../../shared/ui'
 import { BigMoon, Skyline } from '../scenery'
 
 const sky =
@@ -41,19 +44,41 @@ function Logo() {
   )
 }
 
-function MonsterOnRoof({ info, active, onFocus }: { info: MonsterInfo; active: boolean; onFocus: () => void }) {
+interface Speech {
+  monster: Monster
+  text: string
+}
+
+function MonsterOnRoof({
+  info,
+  active,
+  line,
+  align,
+  onEnter,
+  onFocus,
+}: {
+  info: MonsterInfo
+  active: boolean
+  line: string | null
+  align: 'left' | 'center' | 'right'
+  /** Pointer arrived: say the next line. */
+  onEnter: () => void
+  /** Focus or click: speak only if this monster isn't already talking. */
+  onFocus: () => void
+}) {
   // Moonlit rim so dark sprites stay readable against the black skyline.
   const rim = active ? accents[info.id].main : '#3a3360'
   return (
     <button
       type="button"
-      onMouseEnter={onFocus}
+      onMouseEnter={onEnter}
       onFocus={onFocus}
       onClick={onFocus}
       aria-pressed={active}
       aria-label={`${info.name}: ${info.curse}. Real need: ${info.need}`}
-      className="group flex cursor-pointer flex-col items-center gap-1 outline-none"
+      className="group relative flex cursor-pointer flex-col items-center gap-1 outline-none"
     >
+      {line && <SpeechBubble monster={info.id} text={line} align={align} />}
       <div className={active ? 'anim-bob' : ''}>
         <PixelSprite
           sprite={monsterSprites[info.id]}
@@ -73,7 +98,41 @@ function MonsterOnRoof({ info, active, onFocus }: { info: MonsterInfo; active: b
 }
 
 export function Landing() {
-  const [focus, setFocus] = useState<MonsterInfo>(monsters[0])
+  const [active, setActive] = useState<Monster>('vampire')
+  const [speech, setSpeech] = useState<Speech | null>(null)
+  const intro = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const counters = useRef<Record<Monster, number>>({ vampire: 0, banshee: 0, hob: 0, zombie: 0 })
+
+  // Intro: each monster says its line in turn, long enough to type and be read.
+  useEffect(() => {
+    let i = 0
+    const step = () => {
+      const line = landingIntro[i++]
+      if (!line) {
+        setSpeech(null)
+        intro.current = undefined
+        return
+      }
+      setSpeech(line)
+      setActive(line.monster)
+      // A spoken line gets its full length plus a beat; a silent one, time to type and be read.
+      const spoken = voiceMs(lineId(line.monster, line.text))
+      intro.current = setTimeout(step, spoken ? spoken + 500 : Math.max(1800, line.text.length * 30 + 700))
+    }
+    intro.current = setTimeout(step, 900)
+    return () => clearTimeout(intro.current)
+  }, [])
+
+  // `advance` is only true when the pointer arrives. A click, tap or focus on a monster that is already
+  // talking leaves its line (and voice) alone, so clicking never restarts or doubles the dialogue.
+  const speak = (monster: Monster, advance: boolean) => {
+    clearTimeout(intro.current)
+    intro.current = undefined
+    if (!advance && speech?.monster === monster) return
+    const text = nextLine(dialogue[monster].landing, counters.current[monster]++)
+    setSpeech({ monster, text })
+    setActive(monster)
+  }
 
   return (
     <main className="min-h-dvh">
@@ -112,22 +171,21 @@ export function Landing() {
           {!clerkEnabled && <p className="text-base text-ash/70">Demo mode: accounts stay in this browser.</p>}
         </div>
 
-        <div className="relative z-10 mt-6">
-          <Card
-            accent={focus.id}
-            className="mx-auto mb-2 w-[min(92vw,30rem)] p-2! text-center"
-            aria-live="polite"
-          >
-            <p className="font-display text-lg" style={{ color: accents[focus.id].main }}>
-              {focus.name} · {focus.curse}
-            </p>
-            <p className="text-lg text-ash">Really: {focus.need.toLowerCase()}</p>
-          </Card>
+        {/* Headroom for the speech bubbles above the rooftop monsters. */}
+        <div className="relative z-10 mt-24">
           <div className="relative">
             <Skyline className="h-[clamp(170px,23vw,330px)]" />
             <div className="absolute inset-x-0 bottom-[6%] mx-auto grid max-w-3xl grid-cols-4 items-end gap-2 px-4">
-              {monsters.map((m) => (
-                <MonsterOnRoof key={m.id} info={m} active={focus.id === m.id} onFocus={() => setFocus(m)} />
+              {monsters.map((m, i) => (
+                <MonsterOnRoof
+                  key={m.id}
+                  info={m}
+                  active={active === m.id}
+                  line={speech?.monster === m.id ? speech.text : null}
+                  align={i === 0 ? 'left' : i === monsters.length - 1 ? 'right' : 'center'}
+                  onEnter={() => speak(m.id, true)}
+                  onFocus={() => speak(m.id, false)}
+                />
               ))}
             </div>
           </div>

@@ -1,5 +1,5 @@
 export { banshee } from './banshee'
-export { bat, sun, tombstone } from './decor'
+export { bat, speakerOff, speakerOn, sun, tombstone } from './decor'
 export { hob } from './hob'
 export { vampire } from './vampire'
 export { zombie } from './zombie'

@@ -347,6 +347,32 @@ Every screen has a loading state and an empty state, the demo cannot show a blan
 - Don't render hundreds of Leaflet `Polygon`s. Draw bulk geometry with `CanvasRings` (one canvas path, no `closePath()` per ring).
 - The dev server is several times slower than production because of React's dev instrumentation. Judge smoothness, and run the demo, on `npm run build && npm run preview`.
 
+
+### Sound
+
+8-bit chiptune, deliberately quiet so the presenter can talk over it. `src/shared/sound.ts` owns it: nothing plays until the first click or key press, muting (top-right speaker, persisted) stops everything, and a missing or broken file is skipped silently. Files live in `public/sfx/<name>.mp3`. The current ones are placeholders from `scripts/make-sfx.py`; drop in a better file with the same name and nothing else changes.
+
+| Name | For |
+|---|---|
+| `banshee`, `hob`, `zombie` | Each monster's own sound (picker hover and select, feature page arrival). The vampire is deliberately silent |
+| `banshee-moon` | Banshee, a full moon or crunch week appears |
+| `hob-meal` | Hob, meal suggestions finished loading |
+| `zombie-reorganize` | Zombie, the day was reorganized |
+| `seance-summon` | Seance starts (later) |
+| `click`, `transition`, `success`, `error`, `blip` | UI. Shared buttons click on their own (pass `silent` to opt out), route changes play `transition`, `ErrorState` plays `error` |
+| `ambient` | 30 s night loop, starts after the first interaction at volume 0.15 |
+
+In a feature:
+
+```ts
+const { play } = useSound() // import { useSound } from '../../shared/sound'
+useEffect(() => { if (weeks.some((w) => w.phase === 'full')) play('banshee-moon', { volume: 0.5 }) }, [weeks])
+```
+
+- Banshee plays `banshee-moon` when a full moon week appears. Hob plays `hob-meal` when suggestions load. Zombie plays `zombie-reorganize` when the day reorganizes. Each may also play its own monster sound once on page mount.
+- Keep volumes at 0.5 or below. Play on results that actually change, not on every render; `play` ignores repeats within 120 ms and takes a `cooldown` option for more.
+- `monsterBlip(monster)` is a pitched text blip for dialogue.
+
 ---
 
 ## 9. Timeline (5 hours)
