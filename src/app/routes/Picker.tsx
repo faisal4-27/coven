@@ -158,21 +158,27 @@ export function Picker() {
         </div>
 
         <h2 className="mt-16 font-display text-2xl">Tonight on campus</h2>
-        <div className="mt-6 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="flex items-center gap-4">
-            <MoonIcon phase={sky.moon} size={14} scale={4} glow="#f6e7a1" />
-            <div>
-              <p className="font-display text-lg">Moon</p>
-              <p className="text-xl text-ash">{sky.lit}% lit</p>
-            </div>
-          </Card>
-          <Card>
-            <p className="font-display text-lg">Sunset</p>
-            <p className="text-3xl text-vampire">{fmt(sky.sunset)}</p>
-            <p className="text-lg text-ash">Sunrise {fmt(sky.sunrise)}</p>
-          </Card>
-          <RoutePreview />
-          <CrunchPreview />
+        <div className="mt-6 grid gap-8 md:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.75fr)_minmax(0,1.75fr)]">
+          <div className="grid gap-8 md:col-span-2 md:grid-cols-2 lg:col-span-1 lg:grid-cols-1">
+            <Card className="flex items-center gap-4">
+              <MoonIcon phase={sky.moon} size={14} scale={4} glow="#f6e7a1" />
+              <div>
+                <p className="font-display text-lg">Moon</p>
+                <p className="text-xl text-ash">{sky.lit}% lit</p>
+              </div>
+            </Card>
+            <Card>
+              <p className="font-display text-lg">Sunset</p>
+              <p className="text-3xl text-vampire">{fmt(sky.sunset)}</p>
+              <p className="text-lg text-ash">Sunrise {fmt(sky.sunrise)}</p>
+            </Card>
+          </div>
+          <div className="grid md:col-span-2 lg:col-span-1">
+            <RoutePreview />
+          </div>
+          <div className="grid md:col-span-2 lg:col-span-1">
+            <CrunchPreview />
+          </div>
         </div>
       </main>
     </div>
