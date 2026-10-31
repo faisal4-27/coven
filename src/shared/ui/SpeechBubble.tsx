@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { lineId } from '../dialogue'
-import { monsterBlip, playVoice, stopVoice, voiceMs } from '../sound'
+import { monsterBlip, playVoice, stopVoice, useAudioReady, voiceLength } from '../sound'
 import { accents, colors } from '../tokens'
 import type { Monster } from '../types'
 
@@ -42,8 +42,11 @@ const reducedMotion = () =>
 
 function Bubble({ monster, text, align = 'center', keepVoice = false }: Props) {
   const [shown, setShown] = useState(() => (reducedMotion() ? text.length : 0))
-  // A voiced line types in step with the voice and replaces the blips.
-  const [voiced] = useState(() => voiceMs(lineId(monster, text)))
+  // A voiced line types in step with the voice and replaces the blips. Reactive, so a line already on screen
+  // starts speaking as soon as sound becomes available (the first click, or unmuting).
+  const id = lineId(monster, text)
+  const ready = useAudioReady()
+  const voiced = ready ? voiceLength(id) : null
   const charMs = voiced ? Math.min(110, Math.max(CHAR_MS, (voiced * 0.85) / text.length)) : CHAR_MS
   // Screen readers get the whole line once, after the live region exists, instead of every typed letter.
   const [said, setSaid] = useState('')
@@ -62,11 +65,11 @@ function Bubble({ monster, text, align = 'center', keepVoice = false }: Props) {
 
   useEffect(() => {
     if (!voiced) return
-    const el = playVoice(lineId(monster, text))
+    const speaking = playVoice(id)
     return () => {
-      if (!keep.current) stopVoice(el)
+      if (!keep.current) stopVoice(speaking)
     }
-  }, [voiced, monster, text])
+  }, [voiced, id])
 
   useEffect(() => {
     if (shown >= text.length) return

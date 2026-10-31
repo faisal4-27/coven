@@ -1,6 +1,7 @@
 // Tiny sound manager on plain HTMLAudioElement. See the Sound section in AGENTS.md.
 // Nothing plays until the first pointerdown or keydown, a missing file is skipped silently,
 // and every failure is swallowed: sound must never break the app.
+import { useSyncExternalStore } from 'react'
 import { useCoven } from './store'
 // Written by scripts/make-voices.py: voiced line id -> duration in ms. A plain import, so it updates live.
 import voiceLines from './voiceLines.json'
@@ -130,42 +131,100 @@ export function unlockAudio() {
   if (unlocked) return
   unlocked = true
   for (const name of SOUND_NAMES) if (name !== 'ambient') source(name)
+  primeVoice()
   startAmbient()
+  readyListeners.forEach((l) => l())
 }
 
 let installed = false
 
-let voice: HTMLAudioElement | null = null
+// --- Voiced dialogue -------------------------------------------------------------------------------------
+// One persistent element plays every line. It is started (muted) inside the unlocking gesture, which keeps
+// it allowed to play later from hovers in every browser (Safari blocks fresh elements outside a gesture),
+// and a single element means two voices can never overlap.
+
+let voiceEl: HTMLAudioElement | null = null
+let speaking: string | null = null
+const readyListeners = new Set<() => void>()
+
+function voiceElement() {
+  if (!voiceEl && typeof Audio !== 'undefined') {
+    voiceEl = new Audio()
+    voiceEl.preload = 'auto'
+  }
+  return voiceEl
+}
+
+function primeVoice() {
+  const el = voiceElement()
+  if (!el || !exists('click')) return
+  try {
+    el.muted = true
+    el.src = '/sfx/click.mp3'
+    el.play()
+      .then(() => {
+        if (!speaking) el.pause()
+      })
+      .catch(() => {})
+  } catch {
+    // Priming is best effort.
+  }
+}
 
 /** True once sound can actually play: after the first interaction and while not muted. */
 export const audioReady = () => unlocked && !isMuted()
 
-/** Length of a voiced line in ms when it will actually be heard, otherwise null. */
-export function voiceMs(id: string): number | null {
-  const ms = (voiceLines as Record<string, number>)[id]
-  return audioReady() && ms ? ms : null
+/** Recorded length of a line in ms, whether or not sound is on. */
+export function voiceLength(id: string): number | null {
+  return (voiceLines as Record<string, number>)[id] ?? null
 }
 
-/** Speak a dialogue line (see lineId in dialogue.ts). Stops any line already speaking, so only one voice plays. */
-export function playVoice(id: string, volume = 0.6): HTMLAudioElement | null {
-  stopVoice()
-  if (!voiceMs(id) || typeof Audio === 'undefined') return null
+/** Length of a voiced line in ms when it will actually be heard, otherwise null. */
+export function voiceMs(id: string): number | null {
+  return audioReady() ? voiceLength(id) : null
+}
+
+/** Speak a dialogue line (see lineId in dialogue.ts), replacing whatever was being said. Returns the id. */
+export function playVoice(id: string, volume = 0.6): string | null {
+  const el = voiceElement()
+  if (!el || !voiceMs(id)) return null
   try {
-    const el = new Audio(`/voice/${id}.mp3`)
+    el.pause()
+    el.muted = false
     el.volume = clamp(volume)
+    el.src = `/voice/${id}.mp3`
     el.play().catch(() => {})
-    voice = el
-    return el
+    speaking = id
+    return id
   } catch {
     return null
   }
 }
 
-export function stopVoice(el: HTMLAudioElement | null = voice) {
-  el?.pause()
-  if (el === voice) voice = null
+/** Stop speaking. With an id, only if that line is still the one being spoken. */
+export function stopVoice(id: string | null = speaking) {
+  if (!voiceEl || !id || id !== speaking) return
+  voiceEl.pause()
+  speaking = null
 }
 
+function onUnlock(onChange: () => void) {
+  readyListeners.add(onChange)
+  return () => {
+    readyListeners.delete(onChange)
+  }
+}
+
+/** Whether the first interaction has happened yet; browsers allow no sound before it. */
+export function useAudioUnlocked() {
+  return useSyncExternalStore(onUnlock, () => unlocked, () => false)
+}
+
+/** Re-renders when sound becomes available (first interaction) or is muted / unmuted. */
+export function useAudioReady() {
+  const muted = useCoven((s) => s.muted)
+  return useAudioUnlocked() && !muted
+}
 
 /** Call once at startup. Unlocks on the first pointerdown or keydown anywhere in the document. */
 export function installAudioUnlock() {
