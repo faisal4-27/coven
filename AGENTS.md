@@ -13,9 +13,9 @@ This file is the source of truth for anyone (human or coding agent) working in t
 | Monster | Curse | Real student need |
 |---|---|---|
 | Vampire | Burns in sunlight | Light sensitivity, migraines, getting around campus in harsh weather |
-| Werewolf | Transforms on the full moon | Deadline pileups, the weeks where assignments, tests and labs all land together |
-| Witch | Needs ingredients for potions | Budget meal planning around a packed timetable |
-| Zombie | Low energy, slow moving | Burnout and exam week, days where you need the easiest possible plan |
+| Banshee | Wails before doom arrives, so she always sees it coming | Deadline pileups, the weeks where assignments, tests and labs all land together |
+| Hob | A kitchen spirit that cooks whatever scraps are left on the shelf | Budget meal planning around a packed timetable |
+| Zombie | Has been shuffling around Robarts since midterms started, barely moving | Burnout and exam week, days where you need the easiest possible plan |
 
 Demo arc. Open as a goofy Halloween app, show each monster working on real UofT data, finish with Zombie mode reorganizing the whole day in one click, then reveal the accessibility slide ("every monster here is a real UofT student").
 
@@ -29,8 +29,8 @@ Each person owns one full vertical slice, UI plus logic. Stay inside your own fo
 |---|---|---|---|
 | Person 1 | Vampire routing, plus the lightweight shell (hours 0 to 2 only) | `/vampire` and `/` | `src/features/vampire`, `src/app`, `src/shared/ui` |
 | Person 2 | Zombie mode, which is also the home screen content | `/zombie` | `src/features/zombie` |
-| Person 3 | Werewolf crunch moons | `/werewolf` | `src/features/werewolf` |
-| Person 4 | Witch pantry, plus indoor campus mapping and the pitch deck | `/witch` | `src/features/witch` |
+| Person 3 | Banshee crunch moons | `/banshee` | `src/features/banshee` |
+| Person 4 | Hob pantry, plus indoor campus mapping and the pitch deck | `/hob` | `src/features/hob` |
 
 ---
 
@@ -73,8 +73,8 @@ Each person owns one full vertical slice, UI plus logic. Stay inside your own fo
     └── features/
         ├── zombie/
         ├── vampire/
-        ├── werewolf/
-        └── witch/
+        ├── banshee/
+        └── hob/
 ```
 
 Rule of thumb. If a file is outside your feature folder, ask before editing it. `src/shared/types.ts` changes need a team heads up.
@@ -88,7 +88,7 @@ These are agreed in hours 0 to 2 and then treated as fixed. Every feature export
 ```ts
 // src/shared/types.ts
 
-export type Monster = "vampire" | "werewolf" | "witch" | "zombie";
+export type Monster = "vampire" | "banshee" | "hob" | "zombie";
 
 export interface Assessment {
   id: string;
@@ -159,12 +159,12 @@ export function getRoute(
   opts?: { minimizeWalking?: boolean; avoidSun?: boolean }
 ): Promise<RouteResult>;
 
-// Person 3, src/features/werewolf/logic.ts
+// Person 3, src/features/banshee/logic.ts
 export function extractAssessments(file: File, termStart: string): Promise<Assessment[]>;
 export function detectCrunchWeeks(items: Assessment[]): CrunchWeek[];
 export function planStudy(items: Assessment[], weeks: CrunchWeek[], busy: CalendarEvent[]): StudyBlock[];
 
-// Person 4, src/features/witch/logic.ts
+// Person 4, src/features/hob/logic.ts
 export function scanPantry(image: File): Promise<Ingredient[]>;
 export function suggestMeal(
   pantry: Ingredient[],
@@ -186,9 +186,9 @@ export function planZombieDay(date: Date): Promise<CalendarEvent[]>;
 ### Shared state (`src/shared/store.ts`)
 
 - `monster`, the selected monster
-- `assessments`, written by Werewolf, read by Zombie
+- `assessments`, written by Banshee, read by Zombie
 - `events`, the user's classes and planned blocks
-- `pantry`, written by Witch, read by Zombie
+- `pantry`, written by Hob, read by Zombie
 - `now`, the current time, overridable for the demo so we can fake a full moon week
 
 ---
@@ -211,7 +211,7 @@ UI. Map, start and end building pickers, time slider, sun exposure score, toggle
 
 Extra gag. Reflection-free mode as a playful filter for online tutorials.
 
-### 6.2 Werewolf, crunch moons (Person 3)
+### 6.2 Banshee, crunch moons (Person 3)
 
 Goal. Turn syllabi into a term view where heavy weeks show up as approaching full moons, then plan study time early so students are productive before the crunch.
 
@@ -231,16 +231,16 @@ Watch for
 
 UI. Term timeline as a row of moons with a countdown to the next full one, week detail view, generated study blocks on a calendar.
 
-### 6.3 Witch, pantry potions (Person 4)
+### 6.3 Hob, kitchen scraps (Person 4)
 
 Goal. Scan your shelf and get meals that fit the gaps in your timetable and your budget.
 
 How it works
 1. Camera capture or image upload.
 2. `api/scan-pantry.ts` sends the image to a vision LLM and returns `Ingredient[]`.
-3. `suggestMeal` takes ingredients plus free minutes and returns "potions" (real recipes, teas, snacks).
+3. `suggestMeal` takes ingredients plus free minutes and returns scrap recipes (real recipes, teas, snacks).
 4. Missing ingredients are matched against `dining.json` so the app can say where on campus to grab them.
-5. Exam mode suggests focus potions for late study sessions and sleep draughts for after.
+5. Exam mode suggests focus snacks for late study sessions and wind-down teas for after.
 
 Also owned by Person 4
 - In the first 45 minutes, walk the demo route and write `indoor-graph.json`, then hand it to Person 1.
@@ -281,7 +281,7 @@ Backup building data. UofT Map Library building outlines, Statistics Canada Open
 
 Person 1 publishes `src/shared/tokens.ts` and `src/shared/ui/` in the first two hours. Everyone imports from these instead of styling from scratch so the four screens look like one app.
 
-- Dark theme by default, one accent color per monster (vampire red, werewolf silver, witch green, zombie sickly yellow-green)
+- Dark theme by default, one accent color per monster (vampire red, banshee pale blue, hob ember orange, zombie sickly yellow-green)
 - Shared components, `Button`, `Card`, `PageHeader`, `MoonIcon`, `Loading`, `EmptyState`
 - Every screen has a loading state and an empty state, the demo cannot show a blank screen
 - Mobile friendly, judges may open it on a phone
@@ -305,8 +305,8 @@ Five hours is tight. Mocks first, real data second, polish last. Anything not wo
 ### Scope cuts for 5 hours
 
 - Vampire routes over a hand-built graph of the 6 to 8 demo buildings (outdoor edges plus indoor edges), not the full OSM network. Shadows are only computed for those edges.
-- Werewolf handles text PDFs only. Scanned PDFs are future work.
-- Witch skips Coven sharing.
+- Banshee handles text PDFs only. Scanned PDFs are future work.
+- Hob skips Coven sharing.
 - Zombie can ship with mock data from any feature that isn't ready.
 - Reflection-free mode is cut unless everything else is done.
 
@@ -325,8 +325,8 @@ Five hours is tight. Mocks first, real data second, polish last. Anything not wo
 ## 11. Demo script (3 minutes)
 
 1. Home screen, pick Vampire. Route from Bahen to Robarts at midday, watch it hug indoor connections and shade.
-2. Switch to Werewolf. Upload a syllabus, watch the term turn into a row of moons, the next full moon is two weeks out, study blocks appear in the quiet weeks before it.
-3. Switch to Witch. Scan a real shelf, a meal fits the 40 minute gap between classes, with the missing ingredient available at a nearby café.
+2. Switch to Banshee. Upload a syllabus, watch the term turn into a row of moons, the next full moon is two weeks out, study blocks appear in the quiet weeks before it.
+3. Switch to Hob. Scan a real shelf, a meal fits the 40 minute gap between classes, with the missing ingredient available at a nearby café.
 4. Switch to Zombie. One click, the whole day reorganizes into the lowest-effort version.
 5. Reveal slide. Every monster is a real UofT student. Light sensitivity, deadline pileups, tight budgets, burnout.
 
