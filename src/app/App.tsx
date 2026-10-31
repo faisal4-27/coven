@@ -1,8 +1,9 @@
-import { lazy, Suspense } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { lazy, Suspense, useEffect, useRef } from 'react'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import { RequireAuth } from '../shared/auth'
+import { installAudioUnlock, play } from '../shared/sound'
 import { useCoven } from '../shared/store'
-import { Loading } from '../shared/ui'
+import { Loading, SoundToggle } from '../shared/ui'
 import { ComingSoon } from './routes/ComingSoon'
 import { Landing } from './routes/Landing'
 import { Picker } from './routes/Picker'
@@ -16,8 +17,24 @@ function Home() {
   return user ? <Picker /> : <Landing />
 }
 
+/** Transition sound on pathname changes, skipping the first load. */
+function RouteSounds() {
+  const { pathname } = useLocation()
+  const first = useRef(pathname)
+  useEffect(() => {
+    if (pathname === first.current) return
+    first.current = ''
+    play('transition', { volume: 0.4 })
+  }, [pathname])
+  return null
+}
+
 export function App() {
+  useEffect(installAudioUnlock, [])
   return (
+    <>
+    <SoundToggle />
+    <RouteSounds />
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/vampire" element={<RequireAuth><Suspense fallback={<Loading label="Drawing the curtains…" />}><VampirePage /></Suspense></RequireAuth>} />
@@ -26,5 +43,6 @@ export function App() {
       <Route path="/zombie" element={<RequireAuth><ComingSoon monster="zombie" /></RequireAuth>} />
       <Route path="*" element={<Home />} />
     </Routes>
+    </>
   )
 }
