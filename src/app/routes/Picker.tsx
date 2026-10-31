@@ -8,6 +8,7 @@ import { accents, monsters } from '../../shared/tokens'
 import type { CrunchWeek } from '../../shared/types'
 import { Card, MoonIcon, PixelSprite, Starfield } from '../../shared/ui'
 import { RoutePreview } from '../../features/vampire/RoutePreview'
+import { CrunchPreview } from '../../features/banshee/CrunchPreview'
 import { prefetchDay, sunTimes } from '../../features/vampire/logic'
 
 function moonPhase(phase: number): CrunchWeek['phase'] {
@@ -105,7 +106,7 @@ export function Picker() {
         </div>
 
         <h2 className="mt-16 font-display text-2xl">Tonight on campus</h2>
-        <div className="mt-6 grid gap-8 md:grid-cols-[1fr_1fr_2fr]">
+        <div className="mt-6 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <Card className="flex items-center gap-4">
             <MoonIcon phase={sky.moon} size={14} scale={4} glow="#f6e7a1" />
             <div>
@@ -119,6 +120,7 @@ export function Picker() {
             <p className="text-lg text-ash">Sunrise {fmt(sky.sunrise)}</p>
           </Card>
           <RoutePreview />
+          <CrunchPreview />
         </div>
       </main>
     </div>
