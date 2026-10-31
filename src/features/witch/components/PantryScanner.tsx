@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { DragEvent } from 'react';
-import { hob } from '../../shared/sprites';
-import { PixelSprite as SharedPixelSprite } from '../../shared/ui';
+import { hob } from '../../../shared/sprites';
+import { PixelSprite as SharedPixelSprite } from '../../../shared/ui';
 import { getIngredientMeta } from '../ingredients';
 import {
   UnsupportedPantryImageError,

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useCoven } from '../../shared/store';
+import { useCoven } from '../../../shared/store';
 import type { GapDurationMinutes } from '../types';
 
 const GAP_OPTIONS: readonly GapDurationMinutes[] = [10, 20, 40, 60, 90];

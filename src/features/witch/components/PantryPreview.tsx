@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { hob } from '../../shared/sprites';
-import { useCoven } from '../../shared/store';
-import { Card, PixelSprite as SharedPixelSprite } from '../../shared/ui';
+import { hob } from '../../../shared/sprites';
+import { useCoven } from '../../../shared/store';
+import { Card, PixelSprite as SharedPixelSprite } from '../../../shared/ui';
 import { INGREDIENT_BY_ID, idsToIngredients } from '../ingredients';
 import { loadWitchState, suggestMeal } from '../logic';
 import '../styles/witch.css';

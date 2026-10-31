@@ -10,7 +10,7 @@ import { Picker } from './routes/Picker'
 // Leaflet is heavy, keep it out of the landing bundle.
 const VampirePage = lazy(() => import('../features/vampire/VampirePage').then((m) => ({ default: m.VampirePage })))
 const BansheePage = lazy(() => import('../features/banshee/BansheePage'))
-const WitchPage = lazy(() => import('../witch').then((m) => ({ default: m.WitchPage })))
+const WitchPage = lazy(() => import('../features/witch').then((m) => ({ default: m.WitchPage })))
 const ZombieMode = lazy(() => import('../features/zombie').then((m) => ({ default: m.ZombieMode })))
 
 function Home() {

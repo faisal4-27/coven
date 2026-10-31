@@ -1,4 +1,4 @@
-import { useCoven } from '../shared/store';
+import { useCoven } from '../../shared/store';
 import type { Ingredient } from './types';
 
 /**

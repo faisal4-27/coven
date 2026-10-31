@@ -2,7 +2,7 @@ import type {
   CalendarEvent,
   Ingredient,
   MealSuggestion,
-} from '../shared/types';
+} from '../../shared/types';
 
 export type { CalendarEvent, Ingredient, MealSuggestion };
 

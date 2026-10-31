@@ -1,4 +1,4 @@
-# Witch Mode — Potion Overflow (`src/witch/`)
+# Witch Mode — Potion Overflow (`src/features/witch/`)
 
 **Owner:** Person 4  
 **Monster Identity:** Hob / Witch (*Potion Overflow*, route `/hob`, `monster="hob"`)  
@@ -23,7 +23,7 @@
 ## 2. Folder & Component Structure
 
 ```text
-src/witch/
+src/features/witch/
 ├── index.ts                  # Public feature barrel exports
 ├── types.ts                  # Feature types + re-exports of shared Ingredient & MealSuggestion
 ├── ingredients.ts            # 20 ingredients, illustrative CAD prices, allergens, synonym matcher
@@ -43,7 +43,7 @@ src/witch/
 
 ---
 
-## 3. Exported Functions & Components (`src/witch/index.ts`)
+## 3. Exported Functions & Components (`src/features/witch/index.ts`)
 
 - **Components:** `WitchPage`, `PantryPreview`
 - **Core Contracts:**
@@ -81,8 +81,8 @@ src/witch/
 ## 7. Required Integration Points, Env Vars & Team Coordination
 
 - **Router (`src/app/App.tsx` — coordinate with Person 1):** Swap `<ComingSoon monster="hob" />` on `/hob` to render `<WitchPage />` (`Hob` and `Witch` represent the same Person 4 monster slice).
-- **Home / Zombie Dashboard (`src/app/routes/Picker.tsx` & `src/features/zombie` — coordinate with Person 1 & Person 2):** Mount `<PantryPreview />` alongside `<RoutePreview />`, and import `suggestMeal` from `src/witch` for Zombie low-effort meal planning.
-- **Serverless API (`/api/scan-pantry.ts` — team approval):** Move `src/witch/api-draft/scan-pantry.ts` to `/api/scan-pantry.ts` at repo root.
+- **Home / Zombie Dashboard (`src/app/routes/Picker.tsx` & `src/features/zombie` — coordinate with Person 1 & Person 2):** Mount `<PantryPreview />` alongside `<RoutePreview />`, and import `suggestMeal` from `src/features/witch` for Zombie low-effort meal planning.
+- **Serverless API (`/api/scan-pantry.ts` — team approval):** Move `src/features/witch/api-draft/scan-pantry.ts` to `/api/scan-pantry.ts` at repo root.
 - **Environment Variables (Vercel / `.env.local` server-side):**
   - `GEMINI_API_KEY` — Google Gemini API key for server-side pantry vision scanning.
   - `GEMINI_MODEL` *(optional)* — Defaults to `gemini-2.5-flash`.

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { PageHeader, Starfield } from '../../shared/ui';
+import { PageHeader, Starfield } from '../../../shared/ui';
 import {
   costOfMix,
   matchMix,
