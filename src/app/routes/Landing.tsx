@@ -120,7 +120,19 @@ export function Landing() {
       intro.current = setTimeout(step, spoken ? spoken + 500 : Math.max(1800, line.text.length * 30 + 700))
     }
     intro.current = setTimeout(step, 900)
-    return () => clearTimeout(intro.current)
+    // Any click or key press (Sign in, Sign up, anything) ends the intro on whatever line is showing, so the
+    // dialogue never changes underneath someone who is trying to do something.
+    const stop = () => {
+      clearTimeout(intro.current)
+      intro.current = undefined
+    }
+    document.addEventListener('pointerdown', stop, true)
+    document.addEventListener('keydown', stop, true)
+    return () => {
+      stop()
+      document.removeEventListener('pointerdown', stop, true)
+      document.removeEventListener('keydown', stop, true)
+    }
   }, [])
 
   // `advance` is only true when the pointer arrives. A click, tap or focus on a monster that is already
