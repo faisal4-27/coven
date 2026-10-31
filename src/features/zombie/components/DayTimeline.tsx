@@ -38,7 +38,6 @@ export function DayTimeline({ classes, plan, nameOf, viaLabel }: Props) {
                 <ModeIcon mode={leg.mode} />
                 <span>
                   {MODE_LABEL[leg.mode]}{leg.viaId ? ` (${viaLabel(leg.viaId)})` : ''}: {leg.meters} m on foot, {leg.minutes} min
-                  {leg.fitsGap === false && <span className="text-vampire"> Tight! Even this is longer than the gap.</span>}
                 </span>
               </li>
             ),
