@@ -122,12 +122,16 @@ const craters: R[] = [[8, 9, 4, 3], [17, 6, 3, 3], [19, 15, 5, 4], [10, 19, 3, 3
 
 export function BigMoon({ size = 28, scale = 7 }: { size?: number; scale?: number }) {
   const r = size / 2
-  const cells: [number, number][] = []
+  let body = ''
+  let rim = ''
   for (let y = 0; y < size; y++)
     for (let x = 0; x < size; x++) {
       const dx = x + 0.5 - r
       const dy = y + 0.5 - r
-      if (dx * dx + dy * dy <= r * r) cells.push([x, y])
+      if (dx * dx + dy * dy > r * r) continue
+      const px = `M${x} ${y}h1v1h-1z`
+      if (dx * dx + dy * dy > (r - 2) * (r - 2) && dx + dy > 4) rim += px
+      else body += px
     }
   return (
     <svg
@@ -139,12 +143,8 @@ export function BigMoon({ size = 28, scale = 7 }: { size?: number; scale?: numbe
       style={{ filter: 'drop-shadow(0 0 32px rgba(246, 231, 161, 0.35))' }}
       className="h-auto w-full max-w-[45vw] sm:w-auto"
     >
-      {cells.map(([x, y]) => {
-        const dx = x + 0.5 - r
-        const dy = y + 0.5 - r
-        const rim = dx * dx + dy * dy > (r - 2) * (r - 2) && dx + dy > 4
-        return <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill={rim ? '#d9c77e' : colors.moon} />
-      })}
+      <path d={body} fill={colors.moon} />
+      <path d={rim} fill="#d9c77e" />
       {craters.map(([x, y, w, h], i) => (
         <g key={i}>
           <rect x={x} y={y} width={w} height={h} fill="#e3cf84" />

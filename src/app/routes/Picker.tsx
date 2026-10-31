@@ -8,8 +8,7 @@ import { accents, monsters } from '../../shared/tokens'
 import type { CrunchWeek } from '../../shared/types'
 import { Card, MoonIcon, PixelSprite, Starfield } from '../../shared/ui'
 import { RoutePreview } from '../../features/vampire/RoutePreview'
-import { sunTimes } from '../../features/vampire/logic'
-import { loadMassing } from '../../features/vampire/shadows'
+import { prefetchDay, sunTimes } from '../../features/vampire/logic'
 
 function moonPhase(phase: number): CrunchWeek['phase'] {
   // suncalc phase: 0 new, 0.25 first quarter, 0.5 full, 0.75 last quarter. Waning maps onto the same shapes.
@@ -38,7 +37,7 @@ export function Picker() {
   useEffect(() => {
     const id = setTimeout(() => {
       void import('../../features/vampire/VampirePage')
-      void loadMassing()
+      prefetchDay(new Date())
     }, 300)
     return () => clearTimeout(id)
   }, [])

@@ -1,10 +1,11 @@
 // Vampire sun-safe routing. Logic only, so Zombie mode can import it without UI (AGENTS.md section 12).
 import { getTimes } from 'suncalc'
 import type { RouteResult } from '../../shared/types'
-import { buildingByCode, CAMPUS, edges, nodes, toLngLat } from './campus'
-import { castShadows, inShadow, loadMassing, metres, sunAt, type Shadow, type Sun } from './shadows'
-
-type P = [number, number]
+import { buildingByCode, CAMPUS } from './campus'
+import { computeExposure, shadowRings, slotOf, type ExposureData } from './exposure'
+import type { ToWorker } from './exposure.worker'
+import { adjacency, type Edge, type P } from './graph'
+import { loadMassing, type Sun } from './shadows'
 
 export type RouteMode = 'shadiest' | 'fastest'
 
@@ -18,84 +19,77 @@ export interface RoutePlan {
   result: RouteResult
   pieces: RoutePiece[]
   sun: Sun
-  shadows: Shadow[]
+  /** Shadow rings in Leaflet [lat, lng] order. Same array for every plan in a time slot. */
+  shadows: [number, number][][]
 }
 
-const SAMPLE_M = 3
 const WALK_M_PER_MIN = 80
 const PENALTY = { shadiest: 8, minimizeWalking: 0.5, fastest: 0 }
 
-interface Sample {
-  p: P
-  /** Metres from the previous sample. */
-  d: number
-}
+const ready = new Map<number, ExposureData>()
+const pending = new Map<number, { promise: Promise<ExposureData>; resolve: (d: ExposureData) => void }>()
 
-interface Edge {
-  a: string
-  b: string
-  coords: P[]
-  samples: Sample[]
-  length: number
-  indoor: boolean
-  label: string
-}
-
-const graph: Edge[] = edges.map((e) => {
-  const coords = [nodes[e.a], ...(e.via ?? []), nodes[e.b]].map(([u, v]) => toLngLat(u, v))
-  const samples: Sample[] = [{ p: coords[0], d: 0 }]
-  let length = 0
-  for (let i = 1; i < coords.length; i++) {
-    const [a, b] = [coords[i - 1], coords[i]]
-    const seg = metres(a, b)
-    const n = Math.max(1, Math.round(seg / SAMPLE_M))
-    for (let k = 1; k <= n; k++) {
-      const t = k / n
-      samples.push({ p: [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t], d: seg / n })
-    }
-    length += seg
-  }
-  return { a: e.a, b: e.b, coords, samples, length, indoor: Boolean(e.indoor), label: e.label }
-})
-
-const adjacency = new Map<string, { edge: Edge; to: string; forward: boolean }[]>()
-for (const edge of graph) {
-  for (const [from, to, forward] of [[edge.a, edge.b, true], [edge.b, edge.a, false]] as const) {
-    adjacency.set(from, [...(adjacency.get(from) ?? []), { edge, to, forward }])
-  }
-}
-
-/** 15 minute buckets, shadows barely move inside one. */
-const bucket = (at: Date) => Math.floor(at.getTime() / 900_000)
-interface Exposure {
-  sun: Sun
-  shadows: Shadow[]
-  sunny: Map<Edge, boolean[]>
-}
-
-// Promises, not results, so concurrent callers (shadiest + fastest) share one computation.
-const shadowCache = new Map<number, Promise<Exposure>>()
-
-function exposureAt(at: Date) {
-  const key = bucket(at)
-  let hit = shadowCache.get(key)
-  if (!hit) {
-    if (shadowCache.size > 200) shadowCache.clear()
-    hit = loadMassing().then((footprints) => {
-      const sun = sunAt(new Date(key * 900_000 + 450_000))
-      const shadows = castShadows(footprints, sun)
-      const sunny = new Map<Edge, boolean[]>()
-      for (const edge of graph) {
-        sunny.set(edge, edge.samples.map((s) => !edge.indoor && sun.altitude > 0 && !inShadow(s.p, shadows)))
-      }
-      return { sun, shadows, sunny }
+let worker: Worker | null | undefined
+function getWorker() {
+  if (worker === undefined) {
+    worker = typeof Worker === 'undefined' ? null : new Worker(new URL('./exposure.worker.ts', import.meta.url), { type: 'module' })
+    worker?.addEventListener('message', (e: MessageEvent<ExposureData>) => {
+      ready.set(e.data.slot, e.data)
+      pending.get(e.data.slot)?.resolve(e.data)
+      pending.delete(e.data.slot)
     })
-    shadowCache.set(key, hit)
   }
-  return hit
+  return worker
 }
 
-function sunMetres(edge: Edge, flags: boolean[]) {
+function request(slot: number): Promise<ExposureData> {
+  const hit = ready.get(slot)
+  if (hit) return Promise.resolve(hit)
+  let entry = pending.get(slot)
+  if (!entry) {
+    let resolve!: (d: ExposureData) => void
+    const promise = new Promise<ExposureData>((r) => (resolve = r))
+    pending.set(slot, (entry = { promise, resolve }))
+  }
+  return entry.promise
+}
+
+/** Shadows and per-edge sun for a 15 minute slot, computed in a worker so the page never stalls. */
+function exposureAt(at: Date): Promise<ExposureData> {
+  const slot = slotOf(at)
+  if (ready.has(slot)) return Promise.resolve(ready.get(slot)!)
+  const w = getWorker()
+  if (!w) {
+    // No workers (Node tests): compute inline.
+    return loadMassing().then((fp) => {
+      const data = computeExposure(fp, slot)
+      ready.set(slot, data)
+      return data
+    })
+  }
+  const promise = request(slot)
+  w.postMessage({ type: 'want', slot } satisfies ToWorker)
+  return promise
+}
+
+/** Warm every slot of a day in the background so dragging the time slider hits the cache. */
+export function prefetchDay(day: Date, fromHour = 6, toHour = 20) {
+  const w = getWorker()
+  if (!w) return
+  const start = new Date(day)
+  start.setHours(fromHour, 0, 0, 0)
+  const slots: number[] = []
+  for (let t = start.getTime(); t <= start.getTime() + (toHour - fromHour) * 3_600_000; t += 900_000) {
+    const slot = slotOf(new Date(t))
+    if (!ready.has(slot) && !pending.has(slot)) {
+      request(slot)
+      slots.push(slot)
+    }
+  }
+  if (slots.length) w.postMessage({ type: 'prefetch', slots } satisfies ToWorker)
+}
+
+function sunMetres(edge: Edge, flags: Uint8Array) {
   let m = 0
   edge.samples.forEach((s, i) => flags[i] && (m += s.d))
   return m
@@ -152,9 +146,10 @@ export async function planRoute(
   const end = buildingByCode[to]
   if (!start || !end) throw new Error(`Unknown building ${!start ? from : to}`)
 
-  const { sun, shadows, sunny } = await exposureAt(at)
+  const exposure = await exposureAt(at)
+  const { sun, sunny } = exposure
   const penalty = opts?.avoidSun === false ? PENALTY.fastest : opts?.minimizeWalking ? PENALTY.minimizeWalking : PENALTY.shadiest
-  const hops = dijkstra(start.node, end.node, (e) => e.length + penalty * sunMetres(e, sunny.get(e)!)) ?? []
+  const hops = dijkstra(start.node, end.node, (e) => e.length + penalty * sunMetres(e, sunny[e.index])) ?? []
 
   const path: P[] = []
   const pieces: RoutePiece[] = []
@@ -166,7 +161,7 @@ export async function planRoute(
   const flush = () => group && steps.push(`${group.label} · ${describe(group.m, group.sunM, group.indoor)}`)
 
   for (const { edge, forward } of hops) {
-    const flags = sunny.get(edge)!
+    const flags = sunny[edge.index]
     const samples = forward ? edge.samples : [...edge.samples].reverse()
     const sflags = forward ? flags : [...flags].reverse()
     const coords = forward ? edge.coords : [...edge.coords].reverse()
@@ -197,7 +192,7 @@ export async function planRoute(
 
   return {
     sun,
-    shadows,
+    shadows: shadowRings(exposure),
     pieces,
     result: {
       path,

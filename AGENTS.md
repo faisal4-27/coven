@@ -341,6 +341,12 @@ Each accent has a `-dark` variant for pressed and shaded states.
 
 Every screen has a loading state and an empty state, the demo cannot show a blank screen. Mobile friendly down to 400px, judges may open it on a phone.
 
+**Performance rules** (measured, these were real lag sources)
+- No `setInterval` + `setState` animation loops. `PixelSprite` animates frames purely in CSS; a dozen React-driven sprites caused constant stutter.
+- Heavy computation goes in a Web Worker (see `src/features/vampire/exposure.worker.ts`), never on the main thread during input.
+- Don't render hundreds of Leaflet `Polygon`s. Draw bulk geometry with `CanvasRings` (one canvas path, no `closePath()` per ring).
+- The dev server is several times slower than production because of React's dev instrumentation. Judge smoothness, and run the demo, on `npm run build && npm run preview`.
+
 ---
 
 ## 9. Timeline (5 hours)

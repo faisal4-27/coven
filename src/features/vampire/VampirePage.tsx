@@ -1,13 +1,14 @@
 import L from 'leaflet'
-import { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, Marker, Pane, Polygon, Polyline, TileLayer, Tooltip } from 'react-leaflet'
 import { useCoven } from '../../shared/store'
 import { sun as sunSprite, vampire } from '../../shared/sprites'
 import { colors } from '../../shared/tokens'
 import { Card, Loading, PageHeader, PixelButton, PixelSprite } from '../../shared/ui'
 import { BurnMeter } from './BurnMeter'
+import { CanvasRings } from './CanvasRings'
 import { buildingByCode, buildings, CAMPUS, nodes, toLngLat, type Footprint } from './campus'
-import { sunTimes, type RouteMode, type RoutePlan } from './logic'
+import { prefetchDay, sunTimes, type RouteMode, type RoutePlan } from './logic'
 import { loadMassing } from './shadows'
 import { demoTime, useRoutePlans } from './useRoutePlans'
 
@@ -52,7 +53,7 @@ function useFootprints() {
 const CampusMap = memo(function CampusMap({ plan, from, to, onPick }: { plan: RoutePlan | null; from: string; to: string; onPick: (code: string) => void }) {
   const footprints = useFootprints()
   const buildingRings = useMemo(() => footprints?.map((f) => f.ring.map(flip)) ?? [], [footprints])
-  const shadowRings = useMemo(() => plan?.shadows.map((s) => s.ring.map(flip)) ?? [], [plan])
+  const shadowRings = plan?.shadows ?? []
   const center = flip(toLngLat(0, 300))
 
   return (
@@ -88,20 +89,8 @@ const CampusMap = memo(function CampusMap({ plan, from, to, onPick }: { plan: Ro
           />
         </Pane>
       )}
-      {/* Panes are composited with CSS opacity so overlapping shadows read as one union. */}
-      <Pane name="shadows" style={{ zIndex: 410, opacity: 0.8 }}>
-        {shadowRings.length > 0 && (
-          <Polygon positions={shadowRings} pathOptions={{ stroke: false, fillColor: '#0a0718', fillOpacity: 1, interactive: false }} />
-        )}
-      </Pane>
-      <Pane name="buildings" style={{ zIndex: 420 }}>
-        {buildingRings.length > 0 && (
-          <Polygon
-            positions={buildingRings}
-            pathOptions={{ color: '#6a5fa8', weight: 1, fillColor: '#2a2350', fillOpacity: 1, interactive: false }}
-          />
-        )}
-      </Pane>
+      <CanvasRings pane="shadows" zIndex={410} rings={shadowRings} fill="rgba(10, 7, 24, 0.8)" />
+      <CanvasRings pane="buildings" zIndex={420} rings={buildingRings} fill="#2a2350" stroke="#6a5fa8" />
       <Pane name="route" style={{ zIndex: 430 }}>
         {plan?.pieces.map((p, i) => {
           const s = pieceStyle[p.kind]
@@ -185,9 +174,11 @@ export function VampirePage() {
   const [to, setTo] = useState('SS')
   const [mode, setMode] = useState<RouteMode>('shadiest')
   const [at, setAt] = useState(() => demoTime(now, sunrise, sunset))
-  // The slider and clock update instantly; route and shadows catch up without blocking input.
-  const deferredAt = useDeferredValue(at)
-  const { plans, error } = useRoutePlans(from, to, deferredAt)
+  // The slider and clock move instantly; the map redraws at most every 120 ms while dragging.
+  const routeAt = useThrottled(at, 120)
+  const { plans, error } = useRoutePlans(from, to, routeAt)
+  const day = at.toDateString()
+  useEffect(() => prefetchDay(new Date(day)), [day])
   const plan = plans?.[mode] ?? null
   const night = plan ? plan.sun.altitude <= 0 : false
 
@@ -338,6 +329,21 @@ export function VampirePage() {
       </div>
     </div>
   )
+}
+
+/** Leading and trailing throttle: the first change applies at once, the last one always lands. */
+function useThrottled<T>(value: T, ms: number): T {
+  const [out, setOut] = useState(value)
+  const last = useRef(0)
+  useEffect(() => {
+    const wait = Math.max(0, last.current + ms - Date.now())
+    const id = setTimeout(() => {
+      last.current = Date.now()
+      setOut(value)
+    }, wait)
+    return () => clearTimeout(id)
+  }, [value, ms])
+  return out
 }
 
 function compass(bearing: number) {
