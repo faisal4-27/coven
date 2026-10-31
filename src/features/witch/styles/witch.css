@@ -1,0 +1,469 @@
+.witch-root {
+  --w-bg: #170d08;
+  --w-bg-deep: #0f0804;
+  --w-panel: #28160c;
+  --w-panel-hi: #3d2111;
+  --w-edge: #6b3818;
+  --w-well-edge: #4a2610;
+  --w-text: #f4ecd8;
+  --w-muted: #d6b69c;
+  --w-amber: #ffb347;
+  --w-green: #ff7a1a;
+  --w-red: #ff5a36;
+  --w-violet: #ff9f43;
+  --w-hob: #ff7a1a;
+  --w-border: #0a0502;
+
+  --w-font-head: var(--font-display, 'Pixelify Sans', 'Courier New', monospace);
+  --w-font-body: var(--font-pixel, 'VT323', 'Courier New', monospace);
+
+  color: var(--w-text);
+  font-family: var(--w-font-body);
+  font-size: 20px;
+  line-height: 1.25;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.witch-root.witch-page-shell {
+  min-height: 100dvh;
+  background-color: var(--w-bg);
+  background-image:
+    radial-gradient(2px 2px at 26px 38px, rgba(244, 236, 216, 0.72) 50%, transparent 51%),
+    radial-gradient(2px 2px at 118px 94px, rgba(255, 179, 71, 0.7) 50%, transparent 51%),
+    radial-gradient(2px 2px at 212px 28px, rgba(255, 122, 26, 0.78) 50%, transparent 51%),
+    radial-gradient(3px 3px at 78px 186px, rgba(255, 159, 67, 0.58) 50%, transparent 51%),
+    radial-gradient(2px 2px at 284px 154px, rgba(244, 236, 216, 0.58) 50%, transparent 51%);
+  background-size: 320px 230px;
+  position: relative;
+}
+
+.witch-root .witch-pixel-svg {
+  display: inline-block;
+  vertical-align: middle;
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+  flex-shrink: 0;
+}
+
+.witch-root .witch-head {
+  font-family: var(--w-font-head);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  line-height: 1.25;
+}
+
+.witch-root .witch-panel {
+  background-color: var(--w-panel);
+  border: 4px solid var(--w-edge);
+  box-shadow:
+    inset -4px -4px 0 rgba(10, 5, 2, 0.55),
+    inset 4px 4px 0 rgba(255, 160, 80, 0.12),
+    6px 6px 0 var(--w-border);
+}
+
+.witch-root .witch-well {
+  background-color: var(--w-bg-deep);
+  border: 4px solid var(--w-well-edge);
+  box-shadow:
+    inset 4px 4px 0 rgba(0, 0, 0, 0.6),
+    inset -2px -2px 0 rgba(255, 160, 80, 0.08);
+}
+
+.witch-root .witch-btn {
+  font-family: var(--w-font-head);
+  font-size: 16px;
+  line-height: 1.25;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  background-color: var(--w-panel-hi);
+  color: var(--w-text);
+  border: 4px solid var(--w-border);
+  box-shadow:
+    inset -3px -3px 0 rgba(0, 0, 0, 0.45),
+    inset 3px 3px 0 rgba(255, 255, 255, 0.14),
+    0 3px 0 var(--w-border);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.witch-root .witch-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.witch-root .witch-btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    inset -2px -2px 0 rgba(0, 0, 0, 0.45),
+    inset 2px 2px 0 rgba(255, 255, 255, 0.14),
+    0 0 0 var(--w-border);
+}
+
+.witch-root .witch-btn:disabled {
+  opacity: 0.42;
+  filter: grayscale(0.85);
+  cursor: not-allowed;
+}
+
+.witch-root .witch-btn--stir {
+  background-color: var(--w-green);
+  color: var(--w-border);
+  font-size: 20px;
+  padding: 10px 22px;
+}
+
+.witch-root .witch-btn--amber,
+.witch-root .witch-btn[aria-pressed='true'] {
+  background-color: var(--w-amber);
+  color: var(--w-border);
+}
+
+.witch-root .witch-btn--violet {
+  background-color: var(--w-violet);
+  color: var(--w-border);
+}
+
+.witch-root .witch-btn--danger {
+  background-color: var(--w-red);
+  color: var(--w-border);
+}
+
+.witch-root button:focus-visible,
+.witch-root input:focus-visible,
+.witch-root select:focus-visible,
+.witch-root a:focus-visible,
+.witch-root [tabindex]:focus-visible {
+  outline: 3px solid var(--w-amber);
+  outline-offset: 3px;
+}
+
+.witch-root .witch-input {
+  background-color: var(--w-bg-deep);
+  color: var(--w-text);
+  border: 4px solid var(--w-border);
+  box-shadow: inset 3px 3px 0 rgba(0, 0, 0, 0.55);
+  padding: 6px 10px;
+  font-family: var(--w-font-body);
+  font-size: 22px;
+}
+
+.witch-root .witch-chip {
+  font-family: var(--w-font-body);
+  font-size: 19px;
+  padding: 5px 11px;
+  background-color: var(--w-bg-deep);
+  color: var(--w-text);
+  border: 3px solid var(--w-border);
+  box-shadow:
+    inset -2px -2px 0 rgba(0, 0, 0, 0.4),
+    inset 2px 2px 0 rgba(255, 255, 255, 0.1),
+    0 3px 0 var(--w-border);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.witch-root .witch-chip:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: none;
+}
+
+.witch-root .witch-chip[aria-pressed='true'] {
+  background-color: var(--w-red);
+  color: var(--w-border);
+  font-weight: 700;
+}
+
+.witch-root .witch-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border: 3px solid var(--w-border);
+  font-family: var(--w-font-body);
+  font-size: 18px;
+  background-color: var(--w-bg-deep);
+}
+
+.witch-root .witch-tag--green {
+  background-color: var(--w-green);
+  color: var(--w-border);
+}
+
+.witch-root .witch-tag--red {
+  background-color: var(--w-red);
+  color: var(--w-border);
+}
+
+.witch-root .witch-tag--amber {
+  background-color: var(--w-amber);
+  color: var(--w-border);
+}
+
+.witch-root .witch-tag--violet {
+  background-color: var(--w-violet);
+  color: var(--w-border);
+}
+
+/* Ingredient Shelf Buttons */
+.witch-root .witch-shelf-item {
+  position: relative;
+  background-color: var(--w-bg-deep);
+  border: 4px solid var(--w-border);
+  box-shadow:
+    inset -3px -3px 0 rgba(0, 0, 0, 0.5),
+    inset 3px 3px 0 rgba(255, 255, 255, 0.08),
+    0 3px 0 var(--w-border);
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.witch-root .witch-shelf-item:hover:not(:disabled) {
+  background-color: var(--w-panel-hi);
+}
+
+.witch-root .witch-shelf-item:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: none;
+}
+
+.witch-root .witch-shelf-item:disabled {
+  opacity: 0.34;
+  filter: grayscale(0.95);
+  cursor: not-allowed;
+}
+
+.witch-root .witch-shelf-item--owned {
+  border-color: var(--w-green);
+}
+
+.witch-root .witch-shelf-item--mixed {
+  box-shadow:
+    inset 0 0 0 2px var(--w-violet),
+    0 3px 0 var(--w-border);
+}
+
+/* Cauldron Stage & Stepped Animations */
+.witch-root .witch-cauldron-arena {
+  position: relative;
+  overflow: hidden;
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.witch-root .witch-cauldron-glow {
+  padding: 10px 16px;
+  transition: filter 0.2s steps(3, end);
+}
+
+.witch-root .witch-float-token {
+  background-color: var(--w-panel);
+  border: 3px solid var(--w-border);
+  padding: 5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: witch-bob 1.2s steps(2, end) infinite;
+}
+
+.witch-root .witch-float-token:nth-child(even) {
+  animation-delay: 0.4s;
+}
+
+.witch-root .witch-float-token:hover {
+  border-color: var(--w-red);
+}
+
+.witch-root .witch-bubble-row {
+  position: relative;
+  width: 160px;
+  height: 26px;
+}
+
+.witch-root .witch-bubble {
+  position: absolute;
+  bottom: 0;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--w-border);
+  animation: witch-bubble-up 1.3s steps(4, end) infinite;
+}
+
+.witch-root .witch-bubble--1 {
+  left: 22%;
+  animation-delay: 0s;
+}
+
+.witch-root .witch-bubble--2 {
+  left: 48%;
+  width: 12px;
+  height: 12px;
+  animation-delay: 0.4s;
+}
+
+.witch-root .witch-bubble--3 {
+  left: 72%;
+  animation-delay: 0.8s;
+}
+
+.witch-root .witch-bubble--fast {
+  animation-duration: 0.45s;
+}
+
+.witch-root .witch-pot-shake {
+  animation: witch-shake 0.26s steps(2, end) infinite;
+}
+
+.witch-root .witch-recipe-reveal {
+  animation: witch-pop 0.35s steps(4, end) 1;
+}
+
+.witch-root .witch-fly-in {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  z-index: 10;
+  pointer-events: none;
+  animation: witch-fly-arc 0.42s steps(5, end) forwards;
+}
+
+.witch-root .witch-dish-pop {
+  animation: witch-pop 0.35s steps(4, end) forwards;
+}
+
+.witch-root .witch-sparkle {
+  position: absolute;
+  animation: witch-twinkle 0.9s steps(2, end) infinite;
+}
+
+.witch-root .witch-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background-color: rgba(12, 6, 3, 0.86);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.witch-root .witch-progress-track {
+  width: 100%;
+  height: 24px;
+  background-color: var(--w-bg-deep);
+  border: 4px solid var(--w-border);
+  padding: 2px;
+}
+
+.witch-root .witch-progress-fill {
+  height: 100%;
+  background-color: var(--w-green);
+  transition: width 0.25s steps(5, end);
+}
+
+@keyframes witch-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes witch-bubble-up {
+  0% {
+    transform: translateY(6px);
+    opacity: 0.95;
+  }
+  75% {
+    transform: translateY(-16px);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(-22px);
+    opacity: 0;
+  }
+}
+
+@keyframes witch-shake {
+  0% {
+    transform: translateX(-7px) rotate(-2deg);
+  }
+  50% {
+    transform: translateX(7px) rotate(2deg);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes witch-fly-arc {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  60% {
+    transform: translate(-80px, 34px) scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-120px, 92px) scale(0.55);
+    opacity: 0;
+  }
+}
+
+@keyframes witch-pop {
+  0% {
+    transform: scale(0.35);
+    opacity: 0;
+  }
+  65% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes witch-twinkle {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.65);
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .witch-root *,
+  .witch-root *::before,
+  .witch-root *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+

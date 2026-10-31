@@ -1,0 +1,105 @@
+{
+  "updated": "2026-10-31",
+  "places": [
+    {
+      "name": "PLACEHOLDER - Bahen Atrium Grab & Go",
+      "building": "BA",
+      "hours": "PLACEHOLDER (Mon-Fri daytime)",
+      "items": [
+        {
+          "name": "PLACEHOLDER - Fruit & Breakfast Cup",
+          "tags": ["banana", "apple", "yogurt", "oats", "milk"],
+          "priceCad": 0
+        },
+        {
+          "name": "PLACEHOLDER - Toast & Egg Counter",
+          "tags": ["eggs", "bread", "cheese"],
+          "priceCad": 0
+        }
+      ]
+    },
+    {
+      "name": "PLACEHOLDER - Robarts Food Court",
+      "building": "RB",
+      "hours": "PLACEHOLDER (Check UofT Food Services)",
+      "items": [
+        {
+          "name": "PLACEHOLDER - Salad & Veg Bar",
+          "tags": ["spinach", "tomato", "carrot", "onion", "beans"],
+          "priceCad": 0
+        },
+        {
+          "name": "PLACEHOLDER - Hot Grains & Soup Counter",
+          "tags": ["rice", "pasta", "potato", "soy sauce"],
+          "priceCad": 0
+        }
+      ]
+    },
+    {
+      "name": "PLACEHOLDER - Sidney Smith Commons Cafe",
+      "building": "SS",
+      "hours": "PLACEHOLDER (Mon-Fri daytime)",
+      "items": [
+        {
+          "name": "PLACEHOLDER - Wrap & Quesadilla Station",
+          "tags": ["tortilla", "beans", "cheese", "spinach", "tomato"],
+          "priceCad": 0
+        },
+        {
+          "name": "PLACEHOLDER - Quick Snack Rack",
+          "tags": ["banana", "apple", "peanut butter", "bread"],
+          "priceCad": 0
+        }
+      ]
+    },
+    {
+      "name": "PLACEHOLDER - Hart House Arbor Room",
+      "building": "HH",
+      "hours": "PLACEHOLDER (Check Hart House schedule)",
+      "items": [
+        {
+          "name": "PLACEHOLDER - All-Day Breakfast Side",
+          "tags": ["eggs", "bread", "potato", "tomato", "spinach"],
+          "priceCad": 0
+        }
+      ]
+    },
+    {
+      "name": "PLACEHOLDER - Gerstein Reading Cafe",
+      "building": "GS",
+      "hours": "PLACEHOLDER (Mon-Fri daytime)",
+      "items": [
+        {
+          "name": "PLACEHOLDER - Dairy & Chilled Fridge",
+          "tags": ["milk", "yogurt", "cheese", "apple", "oats"],
+          "priceCad": 0
+        }
+      ]
+    },
+    {
+      "name": "PLACEHOLDER - University College Dining Hall",
+      "building": "UC",
+      "hours": "PLACEHOLDER (Meal plan / drop-in hours)",
+      "items": [
+        {
+          "name": "PLACEHOLDER - Pantry Basics & Stir-Fry Bar",
+          "tags": ["rice", "frozen veg", "onion", "carrot", "soy sauce", "beans"],
+          "priceCad": 0
+        }
+      ]
+    },
+    {
+      "name": "PLACEHOLDER - Myhal Lobby Espresso Kiosk",
+      "building": "MY",
+      "hours": "PLACEHOLDER (Mon-Fri daytime)",
+      "items": [
+        {
+          "name": "PLACEHOLDER - Morning Pantry Cup",
+          "tags": ["milk", "banana", "oats", "peanut butter", "yogurt"],
+          "priceCad": 0
+        }
+      ]
+    }
+  ]
+}
+
