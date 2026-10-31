@@ -1,111 +1,242 @@
+/* Clerk's styles live in their own layer so Tailwind utilities don't fight them. */
+@layer theme, base, clerk, components, utilities;
+@import 'tailwindcss';
+
+/* Coven pixel theme. Tokens mirror src/shared/tokens.ts. */
+@theme {
+  --font-display: 'Pixelify Sans', 'Courier New', monospace;
+  --font-pixel: 'VT323', 'Courier New', monospace;
+
+  --color-night: #0b0a14;
+  --color-dusk: #13111f;
+  --color-panel: #1a1730;
+  --color-panel-hi: #262142;
+  --color-edge: #3a3360;
+  --color-bone: #f4ecd8;
+  --color-ash: #9c94b8;
+  --color-moon: #f6e7a1;
+
+  --color-vampire: #d7263d;
+  --color-vampire-dark: #7a0f1f;
+  --color-banshee: #9ad1ff;
+  --color-banshee-dark: #3b6c9c;
+  --color-hob: #ff7a1a;
+  --color-hob-dark: #8f3a05;
+  --color-zombie: #a8d84e;
+  --color-zombie-dark: #4d6b1a;
+}
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  color-scheme: dark;
+  --accent: var(--color-vampire);
+  --accent-dark: var(--color-vampire-dark);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
+html,
+body,
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+  min-height: 100%;
 }
 
 body {
   margin: 0;
+  background: var(--color-night);
+  color: var(--color-bone);
+  font-family: var(--font-pixel);
+  font-size: 20px;
+  line-height: 1.25;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+::selection {
+  background: var(--accent);
+  color: var(--color-night);
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+/* Pixel primitives: hard edges, stepped corners, no blur. */
+@utility px-border {
+  box-shadow:
+    0 -4px 0 0 var(--color-edge),
+    0 4px 0 0 var(--color-edge),
+    -4px 0 0 0 var(--color-edge),
+    4px 0 0 0 var(--color-edge);
+}
+
+@utility px-shadow {
+  box-shadow:
+    0 -4px 0 0 var(--color-edge),
+    0 4px 0 0 var(--color-edge),
+    -4px 0 0 0 var(--color-edge),
+    4px 0 0 0 var(--color-edge),
+    8px 8px 0 0 #000;
+}
+
+@utility pixelated {
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
   }
 }
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
   }
 }
-p {
-  margin: 0;
+
+@keyframes drift {
+  from {
+    transform: translateX(-10vw);
+  }
+  to {
+    transform: translateX(110vw);
+  }
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+@keyframes flap {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+@keyframes drip {
+  0% {
+    transform: scaleY(0);
+  }
+  60%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes smoke {
+  0% {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+
+@utility anim-bob {
+  animation: bob 1.6s steps(4) infinite;
+}
+@utility anim-twinkle {
+  animation: twinkle 2.4s steps(3) infinite;
+}
+@utility anim-flap {
+  animation: flap 0.5s steps(2) infinite;
+}
+@utility anim-rise {
+  animation: rise 0.5s steps(5) both;
+}
+@utility anim-smoke {
+  animation: smoke 1.2s steps(6) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Leaflet, restyled to sit inside the pixel theme. */
+.leaflet-container {
+  background: var(--color-night);
+  font-family: var(--font-pixel);
+}
+.coven-map .leaflet-tile-pane {
+  /* OSM's light tiles, inverted into a night map. */
+  filter: invert(1) hue-rotate(200deg) saturate(0.35) brightness(0.55) contrast(1.15);
+  image-rendering: pixelated;
+}
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: var(--color-panel);
+  color: var(--color-bone);
+  border-radius: 0 !important;
+  border-color: var(--color-edge);
+}
+.leaflet-bar {
+  border-radius: 0 !important;
+  border: 4px solid var(--color-edge) !important;
+}
+.leaflet-control-attribution {
+  background: rgb(11 10 20 / 0.7) !important;
+  color: var(--color-ash) !important;
+  font-size: 12px;
+}
+.leaflet-control-attribution a {
+  color: var(--color-banshee) !important;
+}
+.leaflet-tooltip.coven-tip {
+  background: var(--color-panel);
+  color: var(--color-bone);
+  border: 2px solid var(--color-edge);
+  border-radius: 0;
+  box-shadow: 4px 4px 0 #000;
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  padding: 0 6px;
+}
+.leaflet-tooltip.coven-tip::before {
+  display: none;
+}
+
+input[type='range'].px-range {
+  appearance: none;
+  height: 12px;
+  background: var(--color-panel-hi);
+  box-shadow: 0 0 0 4px var(--color-edge);
+}
+input[type='range'].px-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 28px;
+  background: var(--color-moon);
+  box-shadow: 4px 4px 0 #000;
+  cursor: pointer;
+  border: none;
+}
+input[type='range'].px-range::-moz-range-thumb {
+  width: 20px;
+  height: 28px;
+  background: var(--color-moon);
+  border: none;
+  border-radius: 0;
+  box-shadow: 4px 4px 0 #000;
+  cursor: pointer;
 }
