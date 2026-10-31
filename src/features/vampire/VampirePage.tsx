@@ -4,7 +4,8 @@ import { MapContainer, Marker, Pane, Polygon, Polyline, TileLayer, Tooltip } fro
 import { useCoven } from '../../shared/store'
 import { sun as sunSprite, vampire } from '../../shared/sprites'
 import { colors } from '../../shared/tokens'
-import { Card, Loading, PageHeader, PixelButton, PixelSprite } from '../../shared/ui'
+import { play } from '../../shared/sound'
+import { Card, ErrorState, Loading, PageHeader, PixelButton, PixelSprite } from '../../shared/ui'
 import { BurnMeter } from './BurnMeter'
 import { CanvasRings } from './CanvasRings'
 import { buildingByCode, buildings, CAMPUS, nodes, toLngLat, type Footprint } from './campus'
@@ -271,16 +272,17 @@ export function VampirePage() {
 
           <div role="radiogroup" aria-label="Route preference" className="grid grid-cols-2 gap-4">
             {(['shadiest', 'fastest'] as const).map((m) => (
-              <PixelButton key={m} role="radio" aria-checked={mode === m} variant={mode === m ? 'solid' : 'ghost'} onClick={() => setMode(m)}>
+              <PixelButton key={m} role="radio" aria-checked={mode === m} variant={mode === m ? 'solid' : 'ghost'} onClick={() => {
+                  if (m !== mode) play('success', { volume: 0.4 })
+                  setMode(m)
+                }}>
                 {m === 'shadiest' ? 'Shadiest' : 'Fastest'}
               </PixelButton>
             ))}
           </div>
 
           {error ? (
-            <Card accent="vampire">
-              <p className="text-xl">The bats lost the map: {error}</p>
-            </Card>
+            <ErrorState title="The bats lost the map">{error}</ErrorState>
           ) : !plan || !plans ? (
             <Loading label="Casting shadows…" />
           ) : (
