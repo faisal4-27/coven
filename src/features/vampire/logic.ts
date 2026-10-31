@@ -142,11 +142,20 @@ export async function planRoute(
   at: Date,
   opts?: { minimizeWalking?: boolean; avoidSun?: boolean },
 ): Promise<RoutePlan> {
+  const exposure = await exposureAt(at)
+  return { ...route(from, to, exposure, opts), shadows: shadowRings(exposure) }
+}
+
+/** The route itself, without building the slot's shadow rings for the map (planDay doesn't need them). */
+function route(
+  from: string,
+  to: string,
+  exposure: ExposureData,
+  opts?: { minimizeWalking?: boolean; avoidSun?: boolean },
+): Omit<RoutePlan, 'shadows'> {
   const start = buildingByCode[from]
   const end = buildingByCode[to]
   if (!start || !end) throw new Error(`Unknown building ${!start ? from : to}`)
-
-  const exposure = await exposureAt(at)
   const { sun, sunny } = exposure
   const penalty = opts?.avoidSun === false ? PENALTY.fastest : opts?.minimizeWalking ? PENALTY.minimizeWalking : PENALTY.shadiest
   const hops = dijkstra(start.node, end.node, (e) => e.length + penalty * sunMetres(e, sunny[e.index])) ?? []
@@ -192,7 +201,6 @@ export async function planRoute(
 
   return {
     sun,
-    shadows: shadowRings(exposure),
     pieces,
     result: {
       path,
@@ -219,4 +227,41 @@ export function sunTimes(at: Date) {
   const t = getTimes(at, CAMPUS.lat, CAMPUS.lng)
   // Never null at Toronto's latitude, the fallbacks only satisfy the polar-day types.
   return { sunrise: t.sunrise ?? t.solarNoon, sunset: t.sunset ?? t.nadir }
+}
+
+export interface SlotExposure {
+  at: Date
+  sunExposure: number
+  night: boolean
+}
+
+const dayCache = new Map<string, Promise<SlotExposure[]>>()
+const SLOT_MIN = 15
+const DAY_FROM = 6
+const DAY_TO = 20
+
+/**
+ * Sun exposure of the chosen route for every 15 minute slot from 6 am to 8 pm, for the "best time to leave"
+ * strip. Shadows come from the worker's per-slot cache and routing is tiny, so a whole day is cheap.
+ */
+export function planDay(from: string, to: string, day: Date, mode: RouteMode): Promise<SlotExposure[]> {
+  const start = new Date(day)
+  start.setHours(DAY_FROM, 0, 0, 0)
+  const key = `${from}>${to}:${mode}:${start.toDateString()}`
+  let hit = dayCache.get(key)
+  if (!hit) {
+    if (dayCache.size > 50) dayCache.clear()
+    const slots = ((DAY_TO - DAY_FROM) * 60) / SLOT_MIN + 1
+    hit = Promise.all(
+      Array.from({ length: slots }, (_, i) => {
+        const at = new Date(start.getTime() + i * SLOT_MIN * 60_000)
+        return exposureAt(at).then((exposure) => {
+          const p = route(from, to, exposure, mode === 'fastest' ? { avoidSun: false } : undefined)
+          return { at, sunExposure: p.result.sunExposure, night: p.sun.altitude <= 0 }
+        })
+      }),
+    )
+    dayCache.set(key, hit)
+  }
+  return hit
 }

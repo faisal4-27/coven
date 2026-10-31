@@ -217,6 +217,8 @@ Status: working end to end on real data. Notes for whoever touches it:
 - Only the Galbraith to Sandford Fleming indoor link is confirmed. The other indoor edges are placeholders (`verified` unset) until Person 4's `indoor-graph.json` lands.
 - Logic: `planRoute()` returns the contract `RouteResult` plus drawable `pieces` (shade, sun, indoor) and the shadow polygons. `getRoute()` is the section 5 contract wrapper.
 - Base map is OSM tiles inverted with a CSS filter. CARTO now needs an API key, so don't switch back.
+- Demo features: ▶ Time-lapse sweeps the clock to sunset (shadows slide, route re-picks) while a pixel vampire walks the route (`Walker.tsx`, scorched and smoking on sunny stretches). `ExposureStrip.tsx` shows sun exposure per 15 min under the slider, with a "Leave at … for X% sun" suggestion from `planDay()`. The vampire speaks voiced day/night lines.
+- Live weather (`weather.ts`, Open-Meteo, no key) is display only: heavy cloud softens the burn meter and UV 6+ adds a light-sensitivity note. Routing and `RouteResult` ignore weather; it hides itself when offline.
 
 Goal. Get between St. George buildings with as little direct sun as possible, using indoor connections, covered walkways and shaded streets.
 
