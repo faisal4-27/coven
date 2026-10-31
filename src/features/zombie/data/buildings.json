@@ -1,0 +1,53 @@
+{
+  "_note": "Generated from OpenStreetMap (Nominatim) by scripts/zombie-build-places.js, © OpenStreetMap contributors. Re-run instead of hand-editing.",
+  "items": [
+    {
+      "id": "osm-w141691917",
+      "name": "Bahen Centre for Information Technology",
+      "lat": 43.659768,
+      "lng": -79.397249
+    },
+    {
+      "id": "osm-w7991747",
+      "name": "Robarts Library",
+      "lat": 43.664435,
+      "lng": -79.399653
+    },
+    {
+      "id": "osm-w7948423",
+      "name": "Sidney Smith Hall",
+      "lat": 43.662383,
+      "lng": -79.398622
+    },
+    {
+      "id": "osm-w403302492",
+      "name": "Myhal Centre for Engineering Innovation and Entrepreneurship",
+      "lat": 43.660775,
+      "lng": -79.39654
+    },
+    {
+      "id": "osm-r14756874",
+      "name": "Gerstein Science Information Centre",
+      "lat": 43.662085,
+      "lng": -79.393718
+    },
+    {
+      "id": "osm-w988615299",
+      "name": "Medical Sciences Building",
+      "lat": 43.661358,
+      "lng": -79.39346
+    },
+    {
+      "id": "osm-r1989",
+      "name": "Hart House",
+      "lat": 43.663917,
+      "lng": -79.393968
+    },
+    {
+      "id": "osm-w330718925",
+      "name": "Convocation Hall",
+      "lat": 43.660772,
+      "lng": -79.395433
+    }
+  ]
+}

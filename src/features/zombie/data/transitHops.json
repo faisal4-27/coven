@@ -1,0 +1,4 @@
+{
+  "_note": "Hand-enter real TTC hops here. Use building ids from buildings.json. minutes is door to door including the wait, walkMeters is walking to and from the stops. Example shape: { \"id\": \"T1\", \"fromId\": \"osm-w...\", \"toId\": \"osm-w...\", \"mode\": \"subway\" or \"streetcar\", \"line\": \"1\", \"minutes\": 0, \"walkMeters\": 0 }",
+  "items": []
+}
