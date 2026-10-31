@@ -1,8 +1,15 @@
 import type { Assessment } from '../../shared/types'
-import * as pdfjsLib from 'pdfjs-dist'
 import { addDays, dayKey, parseDay } from './dates.ts'
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
+/**
+ * The PDF reader (~1.3 MB with its worker) loads only when a PDF is actually chosen, so opening Banshee stays
+ * fast and TXT/JSON/pasted imports never download it.
+ */
+async function loadPdfjs() {
+  const [pdfjsLib, worker] = await Promise.all([import('pdfjs-dist'), import('pdfjs-dist/build/pdf.worker.min.mjs?url')])
+  pdfjsLib.GlobalWorkerOptions.workerSrc = worker.default
+  return pdfjsLib
+}
 
 const types = ['test', 'exam', 'assignment', 'lab', 'quiz', 'project', 'other'] as const
 export function readAssessments(value: unknown): Assessment[] {
@@ -49,6 +56,7 @@ export function extractFromText(text: string, termStart: string, tutorialDay?: n
 }
 
 async function extractPdfText(file: File): Promise<string> {
+  const pdfjsLib = await loadPdfjs()
   const document = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise
   if (document.numPages > 100) throw new Error('Please import a syllabus with 100 pages or fewer.')
   const pages: string[] = []

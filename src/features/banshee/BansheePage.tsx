@@ -3,12 +3,15 @@ import type { CSSProperties, FormEvent } from 'react'
 import { useCoven } from '../../shared/store'
 import type { Assessment, CalendarEvent, CrunchWeek } from '../../shared/types'
 import { banshee, bat, tombstone } from '../../shared/sprites'
-import { Card, EmptyState, Loading, MoonIcon, PageHeader, PixelButton, PixelSprite, Starfield } from '../../shared/ui'
+import { Card, EmptyState, Loading, MoonIcon, PageHeader, PixelButton, PixelSprite, SpeechBubble, Starfield } from '../../shared/ui'
+import { dialogue, nextLine } from '../../shared/dialogue'
+import { play, useAudioReady } from '../../shared/sound'
 import { PLAN_PREFIX, defaultSettings, detectCrunchWeeks, planEvents } from './logic'
 import type { StudyPlan, StudySettings } from './logic'
 import { addDays, atTime, dayKey, monday, parseDay, shortDate } from './dates'
 import { DeadlineForm } from './DeadlineForm'
 import { SyllabusImport } from './SyllabusImport'
+import { ExtensionDraft } from './ExtensionDraft'
 import './banshee.css'
 
 const hours = (minutes: number) => `${Math.round(minutes / 6) / 10}h`
@@ -46,6 +49,31 @@ export function BansheePage() {
   const nextFull = weeks.find(week => week.phase === 'full' && week.assessments.some(item => item.date >= today))
   const countdown = nextFull ? Math.max(0, Math.round((Date.UTC(parseDay(nextFull.weekStart).getFullYear(), parseDay(nextFull.weekStart).getMonth(), parseDay(nextFull.weekStart).getDate()) - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / 86400_000)) : 0
   const displayedEvents = fresh && plan ? [...busy, ...planEvents(plan, assessments)] : events
+
+  // The Banshee says what matters right now. Only already-voiced lines from shared/dialogue.ts.
+  const stateLine = !assessments.length
+    ? 'Hand me your syllabi. I will find the doom.'
+    : fresh && plan
+      ? 'I scream early so you can study early.'
+      : nextFull && countdown >= 8 && countdown <= 21
+        ? 'Full moon in two weeks. Not the sky kind.'
+        : nextFull
+          ? 'Something heavy is coming. I can feel it in my wail.'
+          : 'Let me warn you before it is too late.'
+  // Hovering her cycles through her other lines; a change of state takes back over. Clicks change nothing.
+  const [override, setOverride] = useState<{ base: string; text: string }>()
+  const hovers = useRef(0)
+  const bansheeLine = override?.base === stateLine ? override.text : stateLine
+
+  // Wail once for each newly spotted full-moon week, once sound is allowed (AGENTS.md, Sound).
+  const ready = useAudioReady()
+  const announced = useRef(new Set<string>())
+  const fullWeek = nextFull?.weekStart
+  useEffect(() => {
+    if (!fullWeek || !ready || announced.current.has(fullWeek)) return
+    announced.current.add(fullWeek)
+    play('banshee-moon', { volume: 0.5 })
+  }, [fullWeek, ready])
   const scheduleDays = view === 'day' ? [day] : Array.from({ length: 7 }, (_, index) => dayKey(addDays(parseDay(scheduleWeek), index)))
   function saveItems(items: Assessment[]) {
     const state = useCoven.getState()
@@ -77,13 +105,20 @@ export function BansheePage() {
   }
   function demo() {
     if (assessments.length) return
+    // Built from this week's Monday so the demo always shows a full crunch moon about two weeks out.
+    const week = parseDay(monday(today))
+    const on = (days: number) => dayKey(addDays(week, days))
     saveItems([
-      { id: crypto.randomUUID(), course: 'MAT224', title: 'Problem Set 3', type: 'assignment', date: dayKey(addDays(now, 10)), weight: 5, confidence: 1 },
-      { id: crypto.randomUUID(), course: 'CSC263', title: 'Reading quiz', type: 'quiz', date: dayKey(addDays(now, 14)), weight: 4, confidence: 1 },
-      { id: crypto.randomUUID(), course: 'STA247', title: 'Midterm', type: 'test', date: dayKey(addDays(now, 21)), time: '10:00', weight: 15, confidence: 1 },
-      { id: crypto.randomUUID(), course: 'CSC209', title: 'Lab report', type: 'lab', date: dayKey(addDays(now, 30)), weight: 8, confidence: 1 },
+      { id: crypto.randomUUID(), course: 'CSC263', title: 'Reading quiz', type: 'quiz', date: on(8), weight: 5, confidence: 1 },
+      { id: crypto.randomUUID(), course: 'CSC209', title: 'Lab report 2', type: 'lab', date: on(10), weight: 12, confidence: 1 },
+      { id: crypto.randomUUID(), course: 'MAT224', title: 'Term Test 2', type: 'test', date: on(15), time: '18:00', weight: 25, location: 'EX', confidence: 1 },
+      { id: crypto.randomUUID(), course: 'STA247', title: 'Midterm', type: 'test', date: on(16), time: '10:00', weight: 30, location: 'MP', confidence: 1 },
+      { id: crypto.randomUUID(), course: 'CSC263', title: 'Problem Set 3', type: 'assignment', date: on(17), weight: 10, confidence: 1 },
+      { id: crypto.randomUUID(), course: 'CSC209', title: 'Project proposal', type: 'project', date: on(23), weight: 20, confidence: 1 },
+      { id: crypto.randomUUID(), course: 'MAT224', title: 'Problem Set 5', type: 'assignment', date: on(29), weight: 15, confidence: 1 },
+      { id: crypto.randomUUID(), course: 'STA247', title: 'Assignment 3', type: 'assignment', date: on(31), weight: 20, confidence: 1 },
     ])
-    setNotice('Sample deadlines added relative to Coven’s current date. Your calendar has not been changed.')
+    setNotice('Sample term added relative to Coven’s current date. One week howls: three big deadlines, 65% of your grade.')
   }
   return <div className="bn-page" style={{ '--accent': 'var(--color-banshee)' } as CSSProperties}>
     <PageHeader monster="banshee" title="Banshee · crunch moons" subtitle="See the storm. Study before it arrives." />
@@ -91,13 +126,13 @@ export function BansheePage() {
       <section className="bn-hero" aria-labelledby="bn-title">
         <Starfield count={24} />
         <div className="bn-hero-copy"><p className="bn-eyebrow">THE DEADLINE ORACLE / COVEN</p><h2 id="bn-title">Doom is coming.<br /><span>You have a plan.</span></h2><p>Read your crunch moons, protect your breaks, and get ahead of the week that howls.</p><div className="bn-actions"><PixelButton accent="banshee" onClick={() => setEditing('new')}>+ Add deadline</PixelButton>{!assessments.length && <PixelButton accent="banshee" variant="ghost" onClick={demo}>Try sample term</PixelButton>}</div></div>
-        <div className="bn-graveyard" aria-hidden="true"><div className="bn-big-moon"><MoonIcon phase={nextFull ? 'full' : 'waxing-crescent'} scale={8} /></div><PixelSprite sprite={bat} scale={3} className="bn-bat anim-flap" /><PixelSprite sprite={banshee} scale={5} className="bn-ghost anim-bob" /><PixelSprite sprite={tombstone} scale={3} className="bn-stone" /><div className="bn-trees" /><div className="bn-ground" /></div>
+        <div className="bn-graveyard"><div className="bn-big-moon" aria-hidden="true"><MoonIcon phase={nextFull ? 'full' : 'waxing-crescent'} scale={8} /></div><PixelSprite sprite={bat} scale={3} className="bn-bat anim-flap" /><div className="bn-ghost" onMouseEnter={() => setOverride({ base: stateLine, text: nextLine(dialogue.banshee.landing, hovers.current++) })}><SpeechBubble monster="banshee" text={bansheeLine} /><PixelSprite sprite={banshee} scale={5} className="anim-bob" /></div><PixelSprite sprite={tombstone} scale={3} className="bn-stone" /><div className="bn-trees" aria-hidden="true" /><div className="bn-ground" aria-hidden="true" /></div>
       </section>
       <div className="bn-stats"><div><strong>{assessments.filter(item => item.date >= today).length}</strong><span>deadlines ahead</span></div><div><strong>{nextFull ? countdown === 0 ? 'This week' : `${countdown} days` : 'Clear skies'}</strong><span>until the next full crunch moon</span></div><div><strong>{fresh && plan ? hours(plan.blocks.reduce((sum, block) => sum + (+new Date(block.end) - +new Date(block.start)) / 60000, 0)) : 'Make room'}</strong><span>{fresh ? 'study time in your preview' : 'for focus, rest & real life'}</span></div></div>
       {(error || analysis.error) && <p role="alert" className="bn-warning">{error || analysis.error}</p>}
       <div role="status" aria-live="polite" className={notice ? 'bn-notice' : ''}>{notice}</div>
       <Card className="bn-section" aria-labelledby="bn-moons"><div className="bn-section-heading"><div><p className="bn-eyebrow">01 / READ THE SKY</p><h2 id="bn-moons">Your term, in moons</h2></div><p className="bn-muted">Moons show workload, not the night sky.</p></div>
-        {!weeks.length ? <EmptyState title="The sky is waiting">Add deadlines or try a sample term to reveal your crunch moons.</EmptyState> : <><div className="bn-moons" aria-label="Select a deadline week">{weeks.map(week => <button type="button" key={week.weekStart} aria-pressed={activeWeek?.weekStart === week.weekStart} className={`bn-moon ${week.phase === 'full' ? 'bn-full' : ''}`} onClick={() => setSelectedWeek(week.weekStart)}><span>{shortDate(week.weekStart)}</span><MoonIcon phase={week.phase} scale={4} /><strong>{week.load}%</strong><small>{week.phase === 'full' ? 'CRUNCH' : week.load ? 'grade weight' : 'quiet week'}</small></button>)}</div><p className="bn-legend">New: &lt;15% · Crescent: 15–29% · Quarter: 30–44% · Gibbous: 45–59% · Full: 60%+ combined grade weight</p>{activeWeek && <div className="bn-week-detail"><h3>Week of {shortDate(activeWeek.weekStart)} <span> / {activeWeek.assessments.length} deadlines · {activeWeek.load}%</span></h3>{activeWeek.assessments.length ? activeWeek.assessments.map(item => <p key={item.id}><strong>{item.course}</strong> {item.title} <span>{shortDate(item.date)} · {item.weight}%</span></p>) : <p className="bn-muted">No deadlines. A good week to prepare for what comes next.</p>}</div>}</>}
+        {!weeks.length ? <EmptyState title="The sky is waiting">Add deadlines or try a sample term to reveal your crunch moons.</EmptyState> : <><div className="bn-moons" aria-label="Select a deadline week">{weeks.map(week => <button type="button" key={week.weekStart} aria-pressed={activeWeek?.weekStart === week.weekStart} className={`bn-moon ${week.phase === 'full' ? 'bn-full' : ''}`} onClick={() => setSelectedWeek(week.weekStart)}><span>{shortDate(week.weekStart)}</span><MoonIcon phase={week.phase} scale={4} /><strong>{week.load}%</strong><small>{week.phase === 'full' ? 'CRUNCH' : week.load ? 'grade weight' : 'quiet week'}</small></button>)}</div><p className="bn-legend">New: &lt;15% · Crescent: 15–29% · Quarter: 30–44% · Gibbous: 45–59% · Full: 60%+ combined grade weight</p>{activeWeek && <div className="bn-week-detail"><h3>Week of {shortDate(activeWeek.weekStart)} <span> / {activeWeek.assessments.length} deadlines · {activeWeek.load}%</span></h3>{activeWeek.assessments.length ? activeWeek.assessments.map(item => <div key={item.id}><p><strong>{item.course}</strong> {item.title} <span>{shortDate(item.date)} · {item.weight}%</span></p>{activeWeek.phase === 'full' && item.date >= today && <ExtensionDraft item={item} clashWith={activeWeek.assessments.filter(other => other.id !== item.id).map(other => `${other.course} ${other.title}`).join(', ').slice(0, 280)} />}</div>) : <p className="bn-muted">No deadlines. A good week to prepare for what comes next.</p>}</div>}</>}
       </Card>
       <div className="bn-columns"><Card className="bn-section" aria-labelledby="bn-deadlines"><div className="bn-section-heading"><div><p className="bn-eyebrow">02 / NAME YOUR DOOM</p><h2 id="bn-deadlines">Deadline grimoire</h2></div><PixelButton accent="banshee" variant="ghost" onClick={() => setEditing('new')}>+ Add</PixelButton></div>
         {editing && <DeadlineForm key={typeof editing === 'string' ? 'new' : editing.id} initial={typeof editing === 'string' ? undefined : editing} today={today} onCancel={() => setEditing(undefined)} onSave={item => { const current = useCoven.getState().assessments; saveItems(current.some(row => row.id === item.id) ? current.map(row => row.id === item.id ? item : row) : [...current, item]); setEditing(undefined) }} />}
@@ -110,7 +145,7 @@ export function BansheePage() {
         <div className="bn-actions"><PixelButton accent="banshee" disabled={loading || !assessments.length || !!analysis.error} onClick={generate}>Generate study plan</PixelButton>{plan && <PixelButton accent="banshee" variant="ghost" disabled={!fresh || loading} onClick={applyPlan}>Add to calendar</PixelButton>}</div>
         {loading && <Loading label="Finding quiet hours…" />}
         {plan && !fresh && <p className="bn-warning">Your deadlines, settings or calendar changed. Generate again before adding this plan.</p>}
-        {fresh && plan && <div className="bn-plan-summary"><h3>{plan.blocks.length} focus sessions · {plan.breaks.length} real breaks</h3><p>{hours(plan.requiredMinutes)} requested · {hours(plan.unscheduled.reduce((sum, row) => sum + row.minutes, 0))} still needs room</p>{!!plan.unscheduled.length && <div className="bn-warning"><h3>Some workload won’t fit</h3>{plan.unscheduled.map(row => <p key={row.assessmentId}><strong>{assessments.find(item => item.id === row.assessmentId)?.title}: {hours(row.minutes)} remaining.</strong> {row.reason}</p>)}<p>Consider changing your hours, reducing the study estimate by adjusting deadlines only if accurate, or discussing workload with your instructor.</p></div>}</div>}
+        {fresh && plan && <div className="bn-plan-summary"><h3>{plan.blocks.length} focus sessions · {plan.breaks.length} real breaks</h3><p>{hours(plan.requiredMinutes)} requested · {hours(plan.unscheduled.reduce((sum, row) => sum + row.minutes, 0))} still needs room</p>{!!plan.unscheduled.length && <div className="bn-warning"><h3>Some workload won’t fit</h3>{plan.unscheduled.map(row => { const item = assessments.find(candidate => candidate.id === row.assessmentId); return <div key={row.assessmentId}><p><strong>{item?.title}: {hours(row.minutes)} remaining.</strong> {row.reason}</p>{item && <ExtensionDraft item={item} />}</div> })}<p>Consider changing your hours, reducing the study estimate by adjusting deadlines only if accurate, or discussing workload with your instructor.</p></div>}</div>}
         <BusyForm today={today} onError={setError} />
       </Card></div>
       <Card className="bn-section" aria-labelledby="bn-calendar"><div className="bn-section-heading"><div><p className="bn-eyebrow">04 / WALK THE PATH</p><h2 id="bn-calendar">{fresh ? 'Study plan preview' : 'Your shared calendar'}</h2></div><div className="bn-actions"><button type="button" aria-pressed={view === 'week'} onClick={() => setView('week')}>Week</button><button type="button" aria-pressed={view === 'day'} onClick={() => setView('day')}>Day</button></div></div>
@@ -122,7 +157,7 @@ export function BansheePage() {
           return <section className="bn-agenda-day" key={date}><h3>{parseDay(date).toLocaleDateString(undefined, { weekday: 'short' })}<span>{shortDate(date)}</span></h3>{!daily.length && <p className="bn-muted">Unclaimed hours</p>}{daily.map(event => <div key={event.id} className={`bn-event ${event.id.startsWith(`${PLAN_PREFIX}break`) ? 'bn-break' : event.kind === 'study' ? 'bn-focus' : ''}`}><small>{+new Date(event.start) < start ? 'Continues' : clock(event.start)} – {+new Date(event.end) > end ? 'next day' : clock(event.end)}</small><p>{event.title}</p></div>)}</section>
         })}</div>
       </Card>
-      <p className="bn-footer">A little less doom. A little more room to breathe. / BANSHEE, BY COVEN<br />Shared data lasts for this app session. Re-add or re-import deadlines after a reload.</p>
+      <p className="bn-footer">A little less doom. A little more room to breathe. / BANSHEE, BY COVEN</p>
     </main>
   </div>
 }

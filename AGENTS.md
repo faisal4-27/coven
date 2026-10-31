@@ -202,6 +202,7 @@ export function planZombieDay(date: Date): Promise<CalendarEvent[]>;
 - `assessments`, written by Banshee, read by Zombie
 - `events`, the user's classes and planned blocks
 - `pantry`, written by Hob, read by Zombie
+- `assessments`, `events` and `pantry` persist in localStorage (`coven.data`), so they survive reloads
 - `now`, the current time, overridable for the demo so we can fake a full moon week
 
 ---
@@ -232,6 +233,8 @@ UI. Map, start and end building pickers, time slider, sun exposure score, toggle
 Extra gag. Reflection-free mode as a playful filter for online tutorials.
 
 ### 6.2 Banshee, crunch moons (Person 3)
+
+Status: live at `/banshee`. Sample term includes a 65% full-moon week about two weeks out for the demo. PDF reader loads on demand. Extension drafts use `api/draft-message.ts` with a built-in template fallback. Needs `OPENAI_API_KEY` on Vercel for PDF extraction and tailored drafts.
 
 Goal. Turn syllabi into a term view where heavy weeks show up as approaching full moons, then plan study time early so students are productive before the crunch.
 

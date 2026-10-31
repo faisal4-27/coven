@@ -2,6 +2,38 @@ import { create } from 'zustand'
 import type { Assessment, CalendarEvent, CovenUser, Ingredient, Monster } from './types'
 
 const MUTED_KEY = 'coven.muted'
+const DATA_KEY = 'coven.data'
+
+interface Saved {
+  assessments: Assessment[]
+  events: CalendarEvent[]
+  pantry: Ingredient[]
+}
+
+/** Deadlines, calendar and pantry survive a reload. Anything unreadable falls back to empty. */
+function readSaved(): Saved {
+  const empty: Saved = { assessments: [], events: [], pantry: [] }
+  try {
+    const raw = localStorage.getItem(DATA_KEY)
+    if (!raw) return empty
+    const data = JSON.parse(raw) as Partial<Saved>
+    return {
+      assessments: Array.isArray(data.assessments) ? data.assessments : [],
+      events: Array.isArray(data.events) ? data.events : [],
+      pantry: Array.isArray(data.pantry) ? data.pantry : [],
+    }
+  } catch {
+    return empty
+  }
+}
+
+function writeSaved(data: Saved) {
+  try {
+    localStorage.setItem(DATA_KEY, JSON.stringify(data))
+  } catch {
+    // Storage blocked or full: the data still lives for this session.
+  }
+}
 
 function readMuted(): boolean {
   try {
@@ -40,13 +72,13 @@ interface CovenState {
   setMuted: (muted: boolean) => void
 }
 
+const saved = readSaved()
+
 export const useCoven = create<CovenState>((set) => ({
   authReady: false,
   user: null,
   monster: null,
-  assessments: [],
-  events: [],
-  pantry: [],
+  ...saved,
   now: new Date(),
   muted: readMuted(),
   setAuth: (user) => set({ user, authReady: true }),
@@ -60,3 +92,8 @@ export const useCoven = create<CovenState>((set) => ({
     set({ muted })
   },
 }))
+
+useCoven.subscribe((s, prev) => {
+  if (s.assessments !== prev.assessments || s.events !== prev.events || s.pantry !== prev.pantry)
+    writeSaved({ assessments: s.assessments, events: s.events, pantry: s.pantry })
+})
