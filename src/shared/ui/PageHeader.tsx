@@ -15,7 +15,7 @@ interface Props {
 
 export function PageHeader({ monster, title, subtitle, children }: Props) {
   return (
-    <header className="flex items-center gap-3 border-b-4 border-edge bg-dusk px-4 py-3 sm:gap-4 sm:px-6">
+    <header className="flex items-center gap-3 border-b-4 border-edge bg-dusk py-3 pl-4 pr-20 sm:gap-4 sm:pl-6">
       <Link to="/" className="font-display text-2xl tracking-widest text-bone hover:text-[var(--accent)]" aria-label="Coven home">
         COVEN
       </Link>

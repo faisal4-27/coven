@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, CSSProperties } from 'react'
 import { Link, type LinkProps } from 'react-router-dom'
+import { play } from '../sound'
 import { accents } from '../tokens'
 import type { Monster } from '../types'
 
@@ -9,7 +10,11 @@ interface Style {
   accent?: Monster
   variant?: Variant
   size?: 'md' | 'lg'
+  /** Skip the click sound, for buttons that play their own. */
+  silent?: boolean
 }
+
+const click = () => play('click', { volume: 0.3 })
 
 function pixelButtonProps({ accent = 'vampire', variant = 'solid', size = 'md' }: Style, className = '') {
   const style = {
@@ -30,10 +35,29 @@ function pixelButtonProps({ accent = 'vampire', variant = 'solid', size = 'md' }
 
 type ButtonProps = Style & ButtonHTMLAttributes<HTMLButtonElement>
 
-export function PixelButton({ accent, variant, size, className, type = 'button', ...rest }: ButtonProps) {
-  return <button type={type} {...pixelButtonProps({ accent, variant, size }, className)} {...rest} />
+export function PixelButton({ accent, variant, size, silent, className, type = 'button', onClick, ...rest }: ButtonProps) {
+  return (
+    <button
+      type={type}
+      {...pixelButtonProps({ accent, variant, size }, className)}
+      {...rest}
+      onClick={(e) => {
+        if (!silent) click()
+        onClick?.(e)
+      }}
+    />
+  )
 }
 
-export function PixelLink({ accent, variant, size, className, ...rest }: Style & LinkProps) {
-  return <Link {...pixelButtonProps({ accent, variant, size }, className)} {...rest} />
+export function PixelLink({ accent, variant, size, silent, className, onClick, ...rest }: Style & LinkProps) {
+  return (
+    <Link
+      {...pixelButtonProps({ accent, variant, size }, className)}
+      {...rest}
+      onClick={(e) => {
+        if (!silent) click()
+        onClick?.(e)
+      }}
+    />
+  )
 }
